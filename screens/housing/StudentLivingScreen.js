@@ -1,62 +1,45 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context'; 
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
 
 export default function StudentLivingScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Student Living 🏠</Text>
+        <Text style={styles.headerTitle}>Student Living</Text>
+        <Text style={styles.headerSubtitle}>Where do you want to search?</Text>
       </View>
 
-      {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>Find Your Perfect Home</Text>
-        <Text style={styles.subtitle}>Choose how you want to search:</Text>
-
-        {/* Student Accommodation Button */}
         <TouchableOpacity
           style={styles.optionCard}
           onPress={() => navigation.navigate('Accommodation')}
+          activeOpacity={0.7}
         >
-          <View style={styles.iconContainer}>
-            <Text style={styles.icon}>🏢</Text>
+          <View style={styles.iconWrap}>
+            <Text style={styles.iconText}>🏢</Text>
           </View>
-          <View style={styles.optionContent}>
-            <Text style={styles.optionTitle}>Student Accommodation</Text>
-            <Text style={styles.optionDescription}>
-              Browse popular student housing providers like Scape, IQ, Chapter, and more
-            </Text>
+          <View style={styles.optionText}>
+            <Text style={styles.optionTitle}>Accommodation</Text>
+            <Text style={styles.optionDesc}>Browse Scape, IQ, Chapter and more</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
 
-        {/* Student Apartments Button */}
         <TouchableOpacity
           style={styles.optionCard}
           onPress={() => navigation.navigate('Apartments')}
+          activeOpacity={0.7}
         >
-          <View style={styles.iconContainer}>
-            <Text style={styles.icon}>🔍</Text>
+          <View style={styles.iconWrap}>
+            <Text style={styles.iconText}>🔍</Text>
           </View>
-          <View style={styles.optionContent}>
-            <Text style={styles.optionTitle}>Student Apartments</Text>
-            <Text style={styles.optionDescription}>
-              Search for apartments by price range, location, and number of bedrooms
-            </Text>
+          <View style={styles.optionText}>
+            <Text style={styles.optionTitle}>Apartments</Text>
+            <Text style={styles.optionDesc}>Search by price, area and bedrooms</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
@@ -66,86 +49,42 @@ export default function StudentLivingScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
+  container: { flex: 1, backgroundColor: Colors.background },
   header: {
-    backgroundColor: Colors.primary,
-    paddingTop: 10,
-    paddingBottom: 20,
+    backgroundColor: Colors.surface,
     paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
-  backButton: {
-    marginBottom: 10,
-  },
-  backButtonText: {
-    color: Colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: Colors.white,
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-    marginBottom: 30,
-  },
+  backButton: { marginBottom: 14 },
+  backButtonText: { fontSize: 14, color: Colors.textLight, fontWeight: '500' },
+  headerTitle: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, letterSpacing: -0.4, marginBottom: 2 },
+  headerSubtitle: { fontSize: 13, color: Colors.textLight },
+  content: { padding: 16 },
   optionCard: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 15,
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    gap: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  iconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.accent + '20',
+  iconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: Colors.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15,
   },
-  icon: {
-    fontSize: 32,
-  },
-  optionContent: {
-    flex: 1,
-  },
-  optionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-    marginBottom: 5,
-  },
-  optionDescription: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-  },
-  arrow: {
-    fontSize: 32,
-    color: Colors.textLight,
-    marginLeft: 10,
-  },
+  iconText: { fontSize: 20 },
+  optionText: { flex: 1 },
+  optionTitle: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary, marginBottom: 3 },
+  optionDesc: { fontSize: 12, color: Colors.textLight, lineHeight: 17 },
+  arrow: { fontSize: 20, color: Colors.textMuted },
 });

@@ -1,12 +1,13 @@
-import React from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert
+  Alert,
+  StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import Colors from '../constants/Colors';
@@ -22,69 +23,61 @@ export default function HomeScreen({ navigation }) {
   };
 
   const features = [
-    { 
-      id: 1, 
-      name: 'Student Living', 
-      icon: '🏠', 
+    {
+      id: 1,
+      name: 'Student Living',
+      icon: 'H',
       screen: 'StudentLiving',
-      color: '#4A90E2',
-      description: 'Find your perfect home'
+      description: 'Find your perfect home',
     },
-    { 
-      id: 2, 
-      name: 'Budget Tracker', 
-      icon: '💰', 
+    {
+      id: 2,
+      name: 'Budget Tracker',
+      icon: 'B',
       screen: 'BudgetTracker',
-      color: '#50C878',
-      description: 'Manage your money'
+      description: 'Manage your finances',
     },
-    { 
-      id: 3, 
-      name: 'Tutor Finder', 
-      icon: '📚', 
-      screen: 'TutorFinder',
-      color: '#9B59B6',
-      description: 'Get academic help'
-    },
-    { 
-      id: 4, 
-      name: 'Roommate Finder', 
-      icon: '👥', 
-      screen: 'RoommateFinder',
-      color: '#E67E22',
-      description: 'Find your perfect match'
-    },
-    { 
-      id: 5, 
-      name: 'Housekeeper', 
-      icon: '🧹', 
-      screen: 'HousekeeperFinder',
-      color: '#E74C3C',
-      description: 'Keep your space clean'
-    },
-    { 
-      id: 6, 
-      name: 'Calendar', 
-      icon: '📅', 
+    {
+      id: 3,
+      name: 'Study Planner',
+      icon: 'S',
       screen: 'Calendar',
-      color: '#1ABC9C',
-      description: 'Plan your studies'
+      description: 'Organise your academic work',
     },
-    { 
-      id: 7, 
-      name: 'Bus & Tube', 
-      icon: '🚌', 
+    {
+      id: 4,
+      name: 'Tutor Finder',
+      icon: 'T',
+      screen: 'TutorFinder',
+      description: 'Get academic support',
+    },
+    {
+      id: 5,
+      name: 'Roommate Finder',
+      icon: 'R',
+      screen: 'RoommateFinder',
+      description: 'Find compatible flatmates',
+    },
+    {
+      id: 6,
+      name: 'Housekeeper',
+      icon: 'K',
+      screen: 'HousekeeperFinder',
+      description: 'Book cleaning services',
+    },
+    {
+      id: 7,
+      name: 'Bus & Tube',
+      icon: 'T',
       screen: 'Transport',
-      color: '#E74C3C',
-      description: 'Get around London'
+      description: 'Get around London',
     },
-    { 
-      id: 8, 
-      name: 'Discounts', 
-      icon: '🎫', 
+    {
+      id: 8,
+      name: 'Discounts',
+      icon: 'D',
       screen: 'Discounts',
-      color: '#F39C12',
-      description: 'Save money as a student'
+      description: 'Save money as a student',
     },
   ];
 
@@ -93,86 +86,64 @@ export default function HomeScreen({ navigation }) {
       navigation.navigate('StudentLiving');
       return;
     }
-    Alert.alert(
-      feature.name,
-      'This feature is coming soon! 🚀',
-      [{ text: 'OK' }]
-    );
+    if (feature.screen === 'BudgetTracker') {
+      navigation.navigate('BudgetTracker');
+      return;
+    }
+    if (feature.screen === 'Calendar') {
+      navigation.navigate('StudyDashboard');
+      return;
+    }
+    if (feature.screen === 'TutorFinder') {
+      navigation.navigate('TutorFinder');
+      return;
+    }
+    Alert.alert(feature.name, 'This feature is coming soon.', [{ text: 'OK' }]);
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Welcome back! 👋</Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.greeting}>Good to see you</Text>
           <Text style={styles.headerTitle}>Student Nest</Text>
-          <Text style={styles.headerSubtitle}>What do you need today?</Text>
         </View>
-        <TouchableOpacity 
-          onPress={handleLogout} 
-          style={styles.logoutButton}
-        >
-          <Text style={styles.logoutText}>Logout</Text>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>Log out</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Quick Stats Bar */}
-      <View style={styles.statsBar}>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>8</Text>
-          <Text style={styles.statLabel}>Features</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>50+</Text>
-          <Text style={styles.statLabel}>Listings</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>🇬🇧</Text>
-          <Text style={styles.statLabel}>London</Text>
-        </View>
-      </View>
-
-      {/* Features Grid */}
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.gridContainer}
+        contentContainerStyle={styles.scrollContent}
       >
-        <Text style={styles.sectionTitle}>All Features</Text>
-        
+        <Text style={styles.sectionLabel}>Features</Text>
+
         {features.map((feature) => (
           <TouchableOpacity
             key={feature.id}
             style={styles.featureCard}
             onPress={() => handleFeaturePress(feature)}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
-            {/* Left colored bar */}
-            <View style={[styles.colorBar, { backgroundColor: feature.color }]} />
-            
-            {/* Icon */}
-            <View style={[styles.iconContainer, { backgroundColor: feature.color + '20' }]}>
-              <Text style={styles.featureIcon}>{feature.icon}</Text>
+            <View style={styles.iconContainer}>
+              <Text style={styles.iconText}>{feature.icon}</Text>
             </View>
-
-            {/* Text */}
             <View style={styles.featureText}>
               <Text style={styles.featureName}>{feature.name}</Text>
               <Text style={styles.featureDescription}>{feature.description}</Text>
             </View>
-
-            {/* Arrow */}
             <Text style={styles.arrow}>›</Text>
           </TouchableOpacity>
         ))}
 
-        {/* Bottom padding */}
-        <View style={{ height: 20 }} />
+        <View style={{ height: 32 }} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -182,132 +153,99 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
-    backgroundColor: Colors.primary,
-    paddingTop: 60,
-    paddingBottom: 25,
-    paddingHorizontal: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'flex-end',
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+    backgroundColor: Colors.surface,
   },
+  headerLeft: {},
   greeting: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
+    fontSize: 13,
+    color: Colors.textSecondary,
     marginBottom: 4,
+    fontWeight: '500',
   },
   headerTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: Colors.white,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.7)',
+    fontSize: 26,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    letterSpacing: -0.5,
   },
   logoutButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
     paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    marginTop: 5,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   logoutText: {
-    color: Colors.white,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  statsBar: {
-    backgroundColor: Colors.white,
-    flexDirection: 'row',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.backgroundDark,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    marginBottom: 3,
-  },
-  statLabel: {
-    fontSize: 12,
     color: Colors.textSecondary,
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: Colors.backgroundDark,
+    fontSize: 13,
+    fontWeight: '500',
   },
   scrollView: {
     flex: 1,
   },
-  gridContainer: {
-    padding: 15,
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-    marginBottom: 15,
-    marginLeft: 5,
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.textLight,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginBottom: 12,
   },
   featureCard: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    marginBottom: 12,
     alignItems: 'center',
-    overflow: 'hidden',
-    elevation: 2,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-  },
-  colorBar: {
-    width: 5,
-    height: '100%',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
   iconContainer: {
-    width: 55,
-    height: 55,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: Colors.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 12,
+    marginRight: 14,
   },
-  featureIcon: {
-    fontSize: 28,
+  iconText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: Colors.primary,
   },
   featureText: {
     flex: 1,
-    paddingVertical: 15,
   },
   featureName: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontWeight: '600',
     color: Colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   featureDescription: {
     fontSize: 13,
     color: Colors.textSecondary,
   },
   arrow: {
-    fontSize: 28,
+    fontSize: 22,
     color: Colors.textLight,
-    paddingRight: 15,
+    marginLeft: 8,
   },
 });
