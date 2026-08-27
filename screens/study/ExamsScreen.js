@@ -17,6 +17,10 @@ import {
   updateDoc 
 } from 'firebase/firestore';
 
+export { getDaysUntil } from './examUtils';
+import { getDaysUntil } from './examUtils';
+
+
 export default function ExamsScreen({ navigation }) {
   const [exams, setExams] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -24,7 +28,6 @@ export default function ExamsScreen({ navigation }) {
     subject: '', date: '', time: '09:00', location: '', hoursNeeded: '15',
   });
 
-  // Load exams from Firebase when screen mounts
   useEffect(() => {
     if (!auth.currentUser) {
       console.log('No user logged in');
@@ -51,31 +54,30 @@ export default function ExamsScreen({ navigation }) {
     return unsubscribe;
   }, []);
 
- const scheduleExamReminder = async (exam) => {
-  try {
-    const examDate = new Date(exam.date + 'T' + exam.time);
-    const reminderDate = new Date(examDate);
-    reminderDate.setDate(reminderDate.getDate() - 1);
-    reminderDate.setHours(18, 0, 0);
-    
-    // Only schedule if date is in the future
-    if (reminderDate > new Date()) {
-      await Notifications.scheduleNotificationAsync({
-        content: { 
-          title: `${exam.subject} exam tomorrow!`, 
-          body: `Exam at ${exam.time}. Get studying!` 
-        },
-        trigger: { 
-          type: 'date',
-          date: reminderDate,
-        },
-      });
-      console.log('Exam reminder scheduled');
+  const scheduleExamReminder = async (exam) => {
+    try {
+      const examDate = new Date(exam.date + 'T' + exam.time);
+      const reminderDate = new Date(examDate);
+      reminderDate.setDate(reminderDate.getDate() - 1);
+      reminderDate.setHours(18, 0, 0);
+      
+      if (reminderDate > new Date()) {
+        await Notifications.scheduleNotificationAsync({
+          content: { 
+            title: `${exam.subject} exam tomorrow!`, 
+            body: `Exam at ${exam.time}. Get studying!` 
+          },
+          trigger: { 
+            type: 'date',
+            date: reminderDate,
+          },
+        });
+        console.log('Exam reminder scheduled');
+      }
+    } catch (e) { 
+      console.error('Notification error:', e); 
     }
-  } catch (e) { 
-    console.error('Notification error:', e); 
-  }
-};
+  };
 
   const addExam = async () => {
     if (!newExam.subject.trim() || !newExam.date) {
@@ -148,14 +150,6 @@ export default function ExamsScreen({ navigation }) {
   const formatDate = (d) => new Date(d).toLocaleDateString('en-GB', {
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
   });
-
-  const getDaysUntil = (d) => {
-    const exam = new Date(d); 
-    const now = new Date();
-    now.setHours(0,0,0,0); 
-    exam.setHours(0,0,0,0);
-    return Math.ceil((exam - now) / 86400000);
-  };
 
   const badgeStyle = (days) => {
     if (days < 0)  return { bg: Colors.backgroundDark, text: Colors.textSecondary };
