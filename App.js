@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { LanguageProvider, useLanguage } from './i18n';
 import { ProfileProvider, useProfile } from './hooks/useProfile';
 // Import screens
+import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import HomeScreen from './screens/HomeScreen';
@@ -95,8 +96,9 @@ function AppStack({ signedIn }) {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!signedIn ? (
         <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Signup" component={SignupScreen} />
+          <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ animation: 'fade' }} />
+          <Stack.Screen name="Login" component={LoginScreen} options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="Signup" component={SignupScreen} options={{ animation: 'slide_from_right' }} />
         </>
       ) : !profile?.profileComplete ? (
         <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />

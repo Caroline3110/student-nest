@@ -48,6 +48,21 @@ export default {
     passwordsDontMatch: 'Passwords do not match',
     passwordTooShort: 'Password must be at least 6 characters',
   },
+  welcome: {
+    headline: 'Your student life,',
+    headlineAccent: 'sorted. ✨',
+    sub: 'Study, money, housing & more, all in one nest.',
+    haveAccount: 'I already have an account',
+    socialProof: 'Join 1,000+ KCL students 🎓',
+    features: {
+      study: 'Study',
+      budget: 'Budget',
+      housing: 'Housing',
+      roommates: 'Roommates',
+      jobs: 'Jobs',
+      wellbeing: 'MindNest',
+    },
+  },
   setup: {
     step: 'Step {{current}} of {{total}}',
     nameTitle: "What's your name?",

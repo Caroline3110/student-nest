@@ -1,17 +1,14 @@
 import { useState } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity,
-  StyleSheet, KeyboardAvoidingView, Platform, Alert, ScrollView,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, View, Alert } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import Colors from '../constants/Colors';
 import { useT } from '../i18n';
-import { LanguageToggle } from '../components/FormField';
+import AuthLayout, { authStyles as s } from '../components/AuthLayout';
+import AuthInput from '../components/AuthInput';
+import PressableScale from '../components/PressableScale';
 
 export default function SignupScreen({ navigation }) {
-  const insets = useSafeAreaInsets();
   const t = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,168 +32,54 @@ export default function SignupScreen({ navigation }) {
     }
   };
 
+
   return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <AuthLayout
+      navigation={navigation}
+      emoji="🎉"
+      badgeColor={Colors.playLilac}
+      title={t('auth.createAccount')}
+      subtitle={t('auth.joinTagline')}
     >
-      <ScrollView bounces={false} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <View style={s.form}>
+        <AuthInput
+          label={t('auth.email')}
+          placeholder="you@example.com"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          autoComplete="email"
+        />
+        <AuthInput
+          label={t('auth.password')}
+          placeholder={t('auth.passwordHint')}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        <AuthInput
+          label={t('auth.confirmPassword')}
+          placeholder="••••••••"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
+        <PressableScale
+          style={[s.button, loading && s.buttonDisabled]}
+          onPress={handleSignup}
+          disabled={loading}
+        >
+          <Text style={s.buttonText}>{loading ? t('auth.creatingAccount') : t('auth.createAccount')}</Text>
+        </PressableScale>
+      </View>
 
-        <View style={[styles.langRow, { paddingTop: insets.top + 12 }]}>
-          <LanguageToggle />
-        </View>
-        <View style={[styles.hero, { paddingTop: 24 }]}>
-          <Text style={styles.heroEmoji}>🏠</Text>
-          <Text style={styles.heroTitle}>Student Nest</Text>
-          <Text style={styles.heroTagline}>{t('auth.joinTagline')}</Text>
-        </View>
-
-        <View style={styles.formSection}>
-          <Text style={styles.heading}>{t('auth.createAccount')}</Text>
-          <Text style={styles.subheading}>{t('auth.signUpSub')}</Text>
-
-          <View style={styles.form}>
-            <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>{t('auth.email')}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="you@example.com"
-                placeholderTextColor={Colors.textMuted}
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                autoComplete="email"
-              />
-            </View>
-
-            <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>{t('auth.password')}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t('auth.passwordHint')}
-                placeholderTextColor={Colors.textMuted}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-            </View>
-
-            <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>{t('auth.confirmPassword')}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="••••••••"
-                placeholderTextColor={Colors.textMuted}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-              />
-            </View>
-
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleSignup}
-              disabled={loading}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.buttonText}>{loading ? t('auth.creatingAccount') : t('auth.createAccount')}</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.linkBtn}>
-            <Text style={styles.linkText}>
-              {t('auth.haveAccount')}{'  '}
-              <Text style={styles.linkBold}>{t('auth.signIn')}</Text>
-            </Text>
-          </TouchableOpacity>
-
-          <View style={{ height: Math.max(insets.bottom + 16, 40) }} />
-        </View>
-
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <PressableScale style={s.link} scaleTo={0.97} onPress={() => navigation.navigate('Login')}>
+        <Text style={s.linkText}>
+          {t('auth.haveAccount')}{'  '}
+          <Text style={s.linkBold}>{t('auth.signIn')}</Text>
+        </Text>
+      </PressableScale>
+    </AuthLayout>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  langRow: { paddingHorizontal: 24 },
-  hero: {
-    backgroundColor: Colors.background,
-    paddingBottom: 24,
-    alignItems: 'center',
-  },
-  heroEmoji: {
-    fontSize: 56,
-    marginBottom: 14,
-  },
-  heroTitle: {
-    fontSize: 34,
-    fontWeight: '800',
-    color: Colors.primary,
-    letterSpacing: -0.8,
-    marginBottom: 10,
-  },
-  heroTagline: {
-    fontSize: 15,
-    color: Colors.textLight,
-    fontWeight: '400',
-  },
-  formSection: {
-    backgroundColor: Colors.background,
-    paddingHorizontal: 28,
-    paddingTop: 16,
-    minHeight: 520,
-  },
-  heading: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    letterSpacing: -0.5,
-    marginBottom: 4,
-  },
-  subheading: {
-    fontSize: 14,
-    color: Colors.textLight,
-    marginBottom: 28,
-  },
-  form: { gap: 14 },
-  inputWrap: { gap: 6 },
-  inputLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: Colors.textMuted,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  input: {
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: Colors.textPrimary,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  buttonDisabled: { opacity: 0.4 },
-  buttonText: {
-    color: Colors.white,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  linkBtn: { marginTop: 24, alignItems: 'center' },
-  linkText: { fontSize: 13, color: Colors.textLight },
-  linkBold: { color: Colors.primary, fontWeight: '600' },
-});

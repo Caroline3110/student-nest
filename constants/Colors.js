@@ -33,4 +33,12 @@ export default {
   accent: '#DC2626',
   accentDark: '#B91C1C',
   info: '#DC2626',
+
+  // Soft pastels for playful decoration only (welcome bubbles, feature chips).
+  playYellow: '#FEF3C7',
+  playSky: '#E0F2FE',
+  playLilac: '#EDE9FE',
+  playMint: '#DCFCE7',
+  playPeach: '#FFE4E6',
+  shadow: '#000000',
 };

@@ -48,6 +48,21 @@ export default {
     passwordsDontMatch: '两次输入的密码不一致',
     passwordTooShort: '密码至少需要 6 个字符',
   },
+  welcome: {
+    headline: '你的留学生活，',
+    headlineAccent: '轻松搞定 ✨',
+    sub: '学习、预算、住房等，一个应用全搞定。',
+    haveAccount: '我已有账户',
+    socialProof: '已有 1,000+ 名 KCL 同学加入 🎓',
+    features: {
+      study: '学习',
+      budget: '预算',
+      housing: '住房',
+      roommates: '室友',
+      jobs: '兼职',
+      wellbeing: 'MindNest',
+    },
+  },
   setup: {
     step: '第 {{current}} 步，共 {{total}} 步',
     nameTitle: '你叫什么名字？',
