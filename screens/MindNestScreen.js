@@ -17,16 +17,16 @@ const MESSAGES = [
 ];
 
 const MOODS = [
-  { label: 'Overwhelmed', emoji: '😰', bg: '#F5F0FF' },
-  { label: 'Lonely',      emoji: '😔', bg: '#EFF6FF' },
-  { label: 'Tired',       emoji: '😴', bg: '#F0F9FF' },
-  { label: 'Anxious',     emoji: '😟', bg: '#FAF0FF' },
-  { label: 'Motivated',   emoji: '💪', bg: '#F0FFF4' },
-  { label: 'Numb',        emoji: '😶', bg: '#F9FAFB' },
-  { label: 'Stressed',    emoji: '😤', bg: '#FFF0F0' },
-  { label: 'Calm',        emoji: '😌', bg: '#F0FFF4' },
-  { label: 'Homesick',    emoji: '🏠', bg: '#FFF7ED' },
-  { label: 'Burnt out',   emoji: '🔥', bg: '#FFF0F0' },
+  { label: 'Overwhelmed', emoji: '😰', bg: Colors.surfaceMuted },
+  { label: 'Lonely',      emoji: '😔', bg: Colors.surfaceMuted },
+  { label: 'Tired',       emoji: '😴', bg: Colors.surfaceMuted },
+  { label: 'Anxious',     emoji: '😟', bg: Colors.surfaceMuted },
+  { label: 'Motivated',   emoji: '💪', bg: Colors.surfaceMuted },
+  { label: 'Numb',        emoji: '😶', bg: Colors.surfaceMuted },
+  { label: 'Stressed',    emoji: '😤', bg: Colors.surfaceMuted },
+  { label: 'Calm',        emoji: '😌', bg: Colors.surfaceMuted },
+  { label: 'Homesick',    emoji: '🏠', bg: Colors.surfaceMuted },
+  { label: 'Burnt out',   emoji: '🔥', bg: Colors.surfaceMuted },
 ];
 
 const CAUSES = [
@@ -57,15 +57,15 @@ const getResponse = (mood, cause) => {
 };
 
 const HELP_CARDS = [
-  { label: "I feel lonely in London", emoji: "🌆", bg: '#EFF6FF', border: '#BFDBFE',
+  { label: "I feel lonely in London", emoji: "🌆", bg: Colors.surfaceMuted, border: Colors.border,
     tips: ["Join a uni society — even one session changes things", "Visit your student union for free weekly events", "Try a 'study with strangers' session at a local café", "Your international office runs regular social events", "Volunteering is one of the best ways to meet people in London"] },
-  { label: "I'm stressed about money", emoji: "💸", bg: '#FFFBEB', border: '#FDE68A',
+  { label: "I'm stressed about money", emoji: "💸", bg: Colors.surfaceMuted, border: Colors.border,
     tips: ["Ask your university about the hardship fund — most have one", "Lidl and Aldi cut food bills by up to 40%", "UNiDAYS and TOTUM give student discounts everywhere", "Too Good To Go gets restaurant food for under £3", "Open Budget Buddy in this app for a full money plan"] },
-  { label: "I can't focus", emoji: "🧠", bg: '#F0FFF4', border: '#BBF7D0',
+  { label: "I can't focus", emoji: "🧠", bg: Colors.surfaceMuted, border: Colors.border,
     tips: ["Change location: library, café, or sit outside", "Phone in another room for just 25 minutes", "Brain dump everything on paper first", "Try lo-fi music or brown noise on YouTube", "Open Study Planner in this app for a Pomodoro session"] },
-  { label: "I'm homesick", emoji: "🏠", bg: '#FFF7ED', border: '#FED7AA',
+  { label: "I'm homesick", emoji: "🏠", bg: Colors.surfaceMuted, border: Colors.border,
     tips: ["Cook a meal from home — familiar food is deeply comforting", "Find your country's cultural society at your university", "Schedule regular video calls home — consistency helps", "Create a small comfort corner in your room", "Write a letter to someone back home, even if unsent"] },
-  { label: "I feel burnt out", emoji: "🔥", bg: '#FFF0F0', border: '#FECACA',
+  { label: "I feel burnt out", emoji: "🔥", bg: Colors.surfaceMuted, border: Colors.border,
     tips: ["Burnout needs real rest — not just a short break", "Make a list of what can actually wait until next week", "Sleep before studying — rested brain learns 3× faster", "Talk to your personal tutor or academic advisor", "Your university counselling service is free — use it"] },
 ];
 
@@ -214,10 +214,10 @@ export default function MindNestScreen({ navigation }) {
       <Text style={styles.sectionLabel}>What do you need right now?</Text>
 
       {[
-        { bg: '#EEF5FF', emoji: '💭', title: 'Daily check-in',             sub: 'How are you feeling today?',              dest: 'checkin'    },
-        { bg: '#F0FFF4', emoji: '🔄', title: 'I need a reset',             sub: 'Quick tools to feel better now',          dest: 'reset'      },
-        { bg: '#FFF7ED', emoji: '🌆', title: 'London student help',        sub: 'Lonely, stressed, homesick, burnt out',   dest: 'help'       },
-        { bg: '#FAF0FF', emoji: '🔀', title: 'Study pressure translator',  sub: 'Reframe negative thoughts',               dest: 'translator' },
+        { bg: Colors.surfaceMuted, emoji: '💭', title: 'Daily check-in',             sub: 'How are you feeling today?',              dest: 'checkin'    },
+        { bg: Colors.surfaceMuted, emoji: '🔄', title: 'I need a reset',             sub: 'Quick tools to feel better now',          dest: 'reset'      },
+        { bg: Colors.surfaceMuted, emoji: '🌆', title: 'London student help',        sub: 'Lonely, stressed, homesick, burnt out',   dest: 'help'       },
+        { bg: Colors.surfaceMuted, emoji: '🔀', title: 'Study pressure translator',  sub: 'Reframe negative thoughts',               dest: 'translator' },
       ].map((card, i) => (
         <TouchableOpacity key={i} style={[styles.mainCard, { backgroundColor: card.bg }]} onPress={() => setView(card.dest)} activeOpacity={0.8}>
           <Text style={styles.mainCardEmoji}>{card.emoji}</Text>
@@ -271,7 +271,7 @@ export default function MindNestScreen({ navigation }) {
   // ── RESPONSE ─────────────────────────────────────────────
   const renderResponse = () => (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      <View style={[styles.responseCard, { backgroundColor: mood?.bg || '#EEF5FF' }]}>
+      <View style={[styles.responseCard, { backgroundColor: mood?.bg || Colors.surfaceMuted }]}>
         <Text style={styles.responseEmoji}>{mood?.emoji}</Text>
         <Text style={styles.responseText}>{getResponse(selectedMood, selectedCause)}</Text>
       </View>
@@ -611,10 +611,10 @@ const styles = StyleSheet.create({
   gardenBtn: {
     marginTop: 8, backgroundColor: Colors.successLight,
     borderRadius: 14, padding: 16, alignItems: 'center',
-    borderWidth: 1, borderColor: '#BBF7D0',
+    borderWidth: 1, borderColor: Colors.border,
   },
-  gardenBtnTitle: { fontSize: 15, fontWeight: '700', color: '#16A34A', marginBottom: 4 },
-  gardenBtnSub: { fontSize: 12, color: '#4ADE80' },
+  gardenBtnTitle: { fontSize: 15, fontWeight: '700', color: Colors.primary, marginBottom: 4 },
+  gardenBtnSub: { fontSize: 12, color: Colors.textLight },
 
   resetCard: {
     flexDirection: 'row', alignItems: 'center', gap: 14,

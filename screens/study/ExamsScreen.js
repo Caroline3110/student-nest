@@ -153,14 +153,14 @@ export default function ExamsScreen({ navigation }) {
 
   const badgeStyle = (days) => {
     if (days < 0)  return { bg: Colors.backgroundDark, text: Colors.textSecondary };
-    if (days <= 3) return { bg: '#FFE5E5', text: '#E74C3C' };
-    if (days <= 7) return { bg: '#FFF4E5', text: '#F39C12' };
-    return { bg: '#E5F3FF', text: '#4A90E2' };
+    if (days <= 3) return { bg: Colors.primaryLight, text: Colors.primary };
+    if (days <= 7) return { bg: Colors.warningLight, text: Colors.warning };
+    return { bg: Colors.surfaceMuted, text: Colors.textSecondary };
   };
 
   const progressColor = (pct) => {
-    if (pct >= 100) return '#50C878';
-    if (pct >= 50)  return '#F39C12';
+    if (pct >= 100) return Colors.success;
+    if (pct >= 50)  return Colors.warning;
     return Colors.textPrimary;
   };
 
@@ -329,9 +329,9 @@ const styles = StyleSheet.create({
   actionRow: { flexDirection: 'row', gap: 8 },
   hoursBtn: {
     flex: 1, paddingVertical: 9, borderRadius: 8,
-    backgroundColor: '#E5F3FF', alignItems: 'center',
+    backgroundColor: Colors.primaryLight, alignItems: 'center',
   },
-  hoursBtnText: { fontSize: 13, fontWeight: '600', color: '#4A90E2' },
+  hoursBtnText: { fontSize: 13, fontWeight: '600', color: Colors.primary },
   deleteBtn: {
     paddingVertical: 9, paddingHorizontal: 14, borderRadius: 8,
     borderWidth: 1, borderColor: Colors.border, alignItems: 'center',

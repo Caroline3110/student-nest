@@ -168,8 +168,6 @@ export default function TutorFinderScreen({ navigation }) {
   const initials = (name) =>
     (name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
-  const AVATAR_COLORS = ['#4A90E2', '#50C878', '#7C3AED', '#F59E0B', '#EF4444', '#0F766E'];
-  const avatarColor = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -242,7 +240,7 @@ export default function TutorFinderScreen({ navigation }) {
             filtered.map(tutor => (
               <View key={tutor.id} style={styles.tutorCard}>
                 <View style={styles.tutorTop}>
-                  <View style={[styles.avatar, { backgroundColor: avatarColor(tutor.name) }]}>
+                  <View style={styles.avatar}>
                     <Text style={styles.avatarText}>{initials(tutor.name)}</Text>
                   </View>
                   <View style={styles.tutorMeta}>
@@ -478,7 +476,7 @@ const styles = StyleSheet.create({
     width: 46, height: 46, borderRadius: 23,
     justifyContent: 'center', alignItems: 'center', marginRight: 12,
   },
-  avatarText: { fontSize: 16, fontWeight: '700', color: Colors.white },
+  avatarText: { fontSize: 16, fontWeight: '700', color: Colors.primary },
   tutorMeta: { flex: 1 },
   tutorName: { fontSize: 16, fontWeight: '600', color: Colors.textPrimary, marginBottom: 2 },
   tutorUni: { fontSize: 12, color: Colors.textSecondary, marginBottom: 3 },

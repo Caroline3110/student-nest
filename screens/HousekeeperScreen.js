@@ -12,8 +12,6 @@ import { collection, addDoc, onSnapshot } from 'firebase/firestore';
 
 const SORT_OPTIONS = ['Default', 'Cheapest first', 'Most expensive'];
 
-const AVATAR_COLORS = ['#4A90E2', '#50C878', '#7C3AED', '#F59E0B', '#EF4444', '#0F766E'];
-const avatarColor = (name) => AVATAR_COLORS[(name?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 const initials = (name) =>
   (name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
@@ -182,7 +180,7 @@ export default function HousekeeperScreen({ navigation }) {
           sorted.map(h => (
             <View key={h.id} style={styles.card}>
               <View style={styles.cardTop}>
-                <View style={[styles.avatar, { backgroundColor: avatarColor(h.name) }]}>
+                <View style={styles.avatar}>
                   <Text style={styles.avatarText}>{initials(h.name)}</Text>
                 </View>
                 <View style={styles.cardMeta}>
@@ -336,7 +334,7 @@ const styles = StyleSheet.create({
     width: 46, height: 46, borderRadius: 23,
     justifyContent: 'center', alignItems: 'center', marginRight: 12,
   },
-  avatarText: { fontSize: 16, fontWeight: '700', color: Colors.white },
+  avatarText: { fontSize: 16, fontWeight: '700', color: Colors.primary },
   cardMeta: { flex: 1 },
   cardName: { fontSize: 16, fontWeight: '600', color: Colors.textPrimary, marginBottom: 2 },
   cardArea: { fontSize: 12, color: Colors.textSecondary, marginBottom: 1 },

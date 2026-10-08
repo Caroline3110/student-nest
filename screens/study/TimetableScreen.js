@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore';
 
 const IMPORT_COLORS = [
-  '#4A90E2', '#50C878', '#7C3AED', '#F59E0B', '#EF4444', '#0F766E',
+  '#DC2626', '#111111', '#71717A', '#D97706', '#16A34A', '#2563EB',
 ];
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];

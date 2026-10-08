@@ -31,26 +31,26 @@ export default function SplashScreen({ onFinish }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
   inner: { alignItems: 'center' },
   logoMark: {
     width: 64, height: 64, borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: Colors.primaryLight,
     justifyContent: 'center', alignItems: 'center',
     marginBottom: 20,
   },
   logoInner: {
     width: 28, height: 28, borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: Colors.primary,
   },
   wordmark: {
-    fontSize: 26, fontWeight: '700', color: Colors.white,
+    fontSize: 26, fontWeight: '700', color: Colors.primary,
     letterSpacing: -0.5, marginBottom: 8,
   },
   tagline: {
-    fontSize: 13, color: 'rgba(255,255,255,0.45)', letterSpacing: 0.2,
+    fontSize: 13, color: Colors.textLight, letterSpacing: 0.2,
   },
 });

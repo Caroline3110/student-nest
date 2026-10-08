@@ -7,7 +7,8 @@ export const getDaysUntil = (d) => {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   exam.setHours(0, 0, 0, 0);
-  const days = Math.ceil((exam - now) / 86400000);
+  // round, not ceil: a clock change makes a day 23 or 25 hours long
+  const days = Math.round((exam - now) / 86400000);
 
   if (days < -365) {
     return 'error, please add a valid date';

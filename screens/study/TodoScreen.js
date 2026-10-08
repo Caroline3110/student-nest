@@ -234,7 +234,7 @@ export default function TodoScreen({ navigation }) {
                   <View style={styles.taskMeta}>
                     <View style={[
                       styles.categoryBadge,
-                      { backgroundColor: task.category === 'Study' ? '#4A90E2' : '#9B59B6' }
+                      { backgroundColor: task.category === 'Study' ? Colors.primary : Colors.textMuted }
                     ]}>
                       <Text style={styles.categoryText}>{task.category}</Text>
                     </View>
@@ -254,10 +254,10 @@ export default function TodoScreen({ navigation }) {
                     {
                       backgroundColor:
                         task.priority === 'high'
-                          ? '#E74C3C'
+                          ? Colors.primary
                           : task.priority === 'medium'
-                          ? '#F39C12'
-                          : '#95A5A6',
+                          ? Colors.warning
+                          : Colors.textMuted,
                     },
                   ]}
                 />
@@ -592,7 +592,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   overdue: {
-    color: '#E74C3C',
+    color: Colors.primary,
     fontWeight: '600',
   },
   priorityIndicator: {

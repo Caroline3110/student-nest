@@ -5,23 +5,14 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
-  StatusBar,
 } from 'react-native';
-import { useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
+import Colors from '../constants/Colors';
 
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-
-  // Home has a dark header, so use light status bar text only while it's
-  // focused and restore dark text for the light-headed screens.
-  useFocusEffect(useCallback(() => {
-    StatusBar.setBarStyle('light-content');
-    return () => StatusBar.setBarStyle('dark-content');
-  }, []));
 
   const handleLogout = async () => {
     try {
@@ -37,8 +28,6 @@ export default function HomeScreen({ navigation }) {
       name: 'Student Living',
       emoji: '🏠',
       screen: 'StudentLiving',
-      color: '#F97316',
-      bg: '#FFF7ED',
       desc: 'Find your perfect home',
     },
     {
@@ -46,8 +35,6 @@ export default function HomeScreen({ navigation }) {
       name: 'Budget Tracker',
       emoji: '💰',
       screen: 'BudgetTracker',
-      color: '#10B981',
-      bg: '#ECFDF5',
       desc: 'Manage your finances',
     },
     {
@@ -55,8 +42,6 @@ export default function HomeScreen({ navigation }) {
       name: 'Study Planner',
       emoji: '📚',
       screen: 'Calendar',
-      color: '#6366F1',
-      bg: '#EEF2FF',
       desc: 'Organise your work',
     },
     {
@@ -64,8 +49,6 @@ export default function HomeScreen({ navigation }) {
       name: 'Tutor Finder',
       emoji: '🎓',
       screen: 'TutorFinder',
-      color: '#D97706',
-      bg: '#FFFBEB',
       desc: 'Get academic support',
     },
     {
@@ -73,8 +56,6 @@ export default function HomeScreen({ navigation }) {
       name: 'Roommates',
       emoji: '🤝',
       screen: 'RoommateFinder',
-      color: '#EC4899',
-      bg: '#FDF2F8',
       desc: 'Find flatmates',
     },
     {
@@ -82,8 +63,6 @@ export default function HomeScreen({ navigation }) {
       name: 'Housekeeper',
       emoji: '✨',
       screen: 'Housekeeper',
-      color: '#0EA5E9',
-      bg: '#F0F9FF',
       desc: 'Book cleaning',
     },
     {
@@ -91,8 +70,6 @@ export default function HomeScreen({ navigation }) {
       name: 'Part-time Jobs',
       emoji: '💼',
       screen: 'PartTimeJobs',
-      color: '#8B5CF6',
-      bg: '#F5F3FF',
       desc: 'Student-friendly work',
     },
     {
@@ -100,8 +77,6 @@ export default function HomeScreen({ navigation }) {
       name: 'MindNest',
       emoji: '🌿',
       screen: 'Wellbeing',
-      color: '#14B8A6',
-      bg: '#F0FDFA',
       desc: 'Wellbeing & support',
     },
   ];
@@ -151,14 +126,14 @@ export default function HomeScreen({ navigation }) {
           {features.map((feature) => (
             <TouchableOpacity
               key={feature.id}
-              style={[styles.card, { backgroundColor: feature.bg }]}
+              style={styles.card}
               onPress={() => handleFeaturePress(feature)}
               activeOpacity={0.75}
             >
-              <View style={[styles.emojiWrap, { backgroundColor: feature.color + '20' }]}>
+              <View style={styles.emojiWrap}>
                 <Text style={styles.emoji}>{feature.emoji}</Text>
               </View>
-              <Text style={[styles.cardName, { color: feature.color }]}>{feature.name}</Text>
+              <Text style={styles.cardName}>{feature.name}</Text>
               <Text style={styles.cardDesc}>{feature.desc}</Text>
             </TouchableOpacity>
           ))}
@@ -171,45 +146,43 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E1B4B',
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     paddingHorizontal: 24,
-    paddingBottom: 28,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   greeting: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.6)',
+    color: Colors.textLight,
     fontWeight: '500',
     marginBottom: 4,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: Colors.primary,
     letterSpacing: -0.5,
   },
   logoutButton: {
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
+    borderColor: Colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
   logoutText: {
-    color: 'rgba(255,255,255,0.7)',
+    color: Colors.textSecondary,
     fontSize: 12,
     fontWeight: '500',
   },
   scrollView: {
     flex: 1,
-    backgroundColor: '#F8F7FF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    overflow: 'hidden',
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -218,7 +191,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#9CA3AF',
+    color: Colors.textMuted,
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 16,
@@ -231,30 +204,35 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '47.5%',
-    borderRadius: 20,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 16,
     padding: 16,
-    minHeight: 150,
+    minHeight: 140,
   },
   emojiWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: Colors.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
   emoji: {
-    fontSize: 24,
+    fontSize: 22,
   },
   cardName: {
     fontSize: 14,
     fontWeight: '700',
+    color: Colors.textPrimary,
     marginBottom: 4,
     lineHeight: 18,
   },
   cardDesc: {
     fontSize: 12,
-    color: '#6B7280',
+    color: Colors.textLight,
     lineHeight: 16,
   },
 });

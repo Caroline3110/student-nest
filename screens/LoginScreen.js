@@ -102,11 +102,11 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#1E1B4B',
+    backgroundColor: Colors.background,
   },
   hero: {
-    backgroundColor: '#1E1B4B',
-    paddingBottom: 52,
+    backgroundColor: Colors.background,
+    paddingBottom: 24,
     alignItems: 'center',
   },
   heroEmoji: {
@@ -116,21 +116,19 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 36,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: Colors.primary,
     letterSpacing: -0.8,
     marginBottom: 10,
   },
   heroTagline: {
     fontSize: 15,
-    color: 'rgba(255,255,255,0.5)',
+    color: Colors.textLight,
     fontWeight: '400',
   },
   formSection: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    backgroundColor: Colors.background,
     paddingHorizontal: 28,
-    paddingTop: 40,
+    paddingTop: 16,
     minHeight: 480,
   },
   heading: {
@@ -165,7 +163,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   button: {
-    backgroundColor: '#1E1B4B',
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
@@ -173,11 +171,11 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.4 },
   buttonText: {
-    color: '#FFFFFF',
+    color: Colors.white,
     fontSize: 15,
     fontWeight: '700',
   },
   linkBtn: { marginTop: 24, alignItems: 'center' },
   linkText: { fontSize: 13, color: Colors.textLight },
-  linkBold: { color: Colors.textPrimary, fontWeight: '600' },
+  linkBold: { color: Colors.primary, fontWeight: '600' },
 });
