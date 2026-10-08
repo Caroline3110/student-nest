@@ -1,25 +1,34 @@
 import { useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator,
+  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Colors from '../../constants/Colors';
+import Colors from '../constants/Colors';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../firebase';
+import { functions } from '../firebase';
 
 const chat = httpsCallable(functions, 'chat');
 
 const SUGGESTIONS = [
-  { emoji: '🍕', label: 'Cheap restaurants', prompt: 'What are the best and cheapest restaurants for students in the UK? I want to eat out for under £8.' },
-  { emoji: '🛒', label: 'Best supermarkets', prompt: 'Which supermarket is cheapest for students in the UK and what should I buy there?' },
-  { emoji: '🍳', label: 'Budget meal ideas', prompt: 'Give me 5 cheap meal ideas I can cook at home for under £3 per serving.' },
-  { emoji: '💰', label: 'Plan my budget', prompt: 'I have £500 for this month. Help me plan my budget as a student in London.' },
-  { emoji: '💡', label: 'Save more money', prompt: 'What are the best ways for a UK student to save money? Give me specific apps, discounts and tips.' },
-  { emoji: '🍔', label: 'Cheap takeaway', prompt: 'I want a takeaway but I am on a budget. What are my cheapest options and how do I save money on food delivery?' },
+  { emoji: '📅', label: 'Weekend work', prompt: 'I am a student in London looking for part-time weekend work. What are my best options and where should I apply?' },
+  { emoji: '☀️', label: 'Summer jobs', prompt: 'What are the best short-term summer jobs for students in the UK? I want to earn as much as possible.' },
+  { emoji: '🎓', label: 'Graduate schemes', prompt: 'I am in my final year and looking for graduate schemes and internships. Where do I start?' },
+  { emoji: '💻', label: 'Remote jobs', prompt: 'Are there good remote or work from home jobs for students with flexible hours around lectures?' },
+  { emoji: '🍺', label: 'Hospitality & bars', prompt: 'I want to work in a bar or restaurant. How do I find hospitality jobs near my university?' },
+  { emoji: '👨‍💻', label: 'Tech internships', prompt: 'I study Computer Science and I am looking for tech internships or junior developer roles. Where should I apply?' },
 ];
 
-export default function BudgetBuddyScreen({ navigation }) {
+const JOB_BOARDS = [
+  { name: 'Indeed UK', url: 'https://uk.indeed.com', emoji: '🔍' },
+  { name: 'StudentJob UK', url: 'https://www.studentjob.co.uk', emoji: '🎓' },
+  { name: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs', emoji: '💼' },
+  { name: 'Totaljobs', url: 'https://www.totaljobs.com', emoji: '📋' },
+  { name: 'Milkround', url: 'https://www.milkround.com', emoji: '🥛' },
+  { name: 'Prospects', url: 'https://www.prospects.ac.uk', emoji: '📈' },
+];
+
+export default function PartTimeJobsScreen({ navigation }) {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,13 +46,13 @@ export default function BudgetBuddyScreen({ navigation }) {
 
     try {
       const { data } = await chat({
-        bot: 'budget',
+        bot: 'jobs',
         messages: next.map(m => ({ role: m.role, content: m.content })),
       });
       const reply = data?.reply ?? "Sorry, I didn't get a response. Please try again.";
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: reply }]);
     } catch (error) {
-      console.error('Budget Buddy error:', error.message);
+      console.error('Job Buddy error:', error.message);
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         role: 'assistant',
@@ -57,7 +66,6 @@ export default function BudgetBuddyScreen({ navigation }) {
 
   const hasMessages = messages.length > 0;
 
-  // Pair up suggestions into rows of 2
   const suggestionRows = [];
   for (let i = 0; i < SUGGESTIONS.length; i += 2) {
     suggestionRows.push(SUGGESTIONS.slice(i, i + 2));
@@ -73,11 +81,11 @@ export default function BudgetBuddyScreen({ navigation }) {
         </TouchableOpacity>
         <View style={styles.headerRow}>
           <View style={styles.headerAvatar}>
-            <Text style={styles.headerAvatarEmoji}>🤖</Text>
+            <Text style={styles.headerAvatarEmoji}>💼</Text>
           </View>
           <View>
-            <Text style={styles.headerTitle}>Budget Buddy</Text>
-            <Text style={styles.headerSub}>AI student money assistant</Text>
+            <Text style={styles.headerTitle}>Job Buddy</Text>
+            <Text style={styles.headerSub}>AI student job assistant</Text>
           </View>
         </View>
       </View>
@@ -95,18 +103,18 @@ export default function BudgetBuddyScreen({ navigation }) {
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
 
-          {/* Welcome screen — shown before any messages */}
+          {/* Welcome screen */}
           {!hasMessages && (
             <View style={styles.welcome}>
               <View style={styles.bigAvatar}>
-                <Text style={styles.bigAvatarEmoji}>🤖</Text>
+                <Text style={styles.bigAvatarEmoji}>💼</Text>
               </View>
-              <Text style={styles.welcomeTitle}>Hi, I'm Budget Buddy!</Text>
+              <Text style={styles.welcomeTitle}>Hi, I'm Job Buddy!</Text>
               <Text style={styles.welcomeSub}>
-                Ask me anything — cheap restaurants, budget meal ideas, supermarket tips, or help planning your monthly money.
+                Tell me what you're looking for — part-time work, summer jobs, internships or graduate schemes — and I'll point you in the right direction.
               </Text>
 
-              {/* Suggestion grid — rows of 2 */}
+              {/* Suggestion grid */}
               {suggestionRows.map((row, rowIdx) => (
                 <View key={rowIdx} style={styles.cardRow}>
                   {row.map((s, i) => (
@@ -122,6 +130,23 @@ export default function BudgetBuddyScreen({ navigation }) {
                   ))}
                 </View>
               ))}
+
+              {/* Job boards quick links */}
+              <Text style={styles.boardsTitle}>Quick links — job boards</Text>
+              <View style={styles.boardsGrid}>
+                {JOB_BOARDS.map((b, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={styles.boardCard}
+                    onPress={() => Linking.openURL(b.url)}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={styles.boardEmoji}>{b.emoji}</Text>
+                    <Text style={styles.boardName}>{b.name}</Text>
+                    <Text style={styles.boardArrow}>›</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           )}
 
@@ -133,11 +158,11 @@ export default function BudgetBuddyScreen({ navigation }) {
             >
               {msg.role === 'assistant' && (
                 <View style={styles.msgAvatar}>
-                  <Text style={styles.msgAvatarEmoji}>🤖</Text>
+                  <Text style={styles.msgAvatarEmoji}>💼</Text>
                 </View>
               )}
               <View style={[styles.bubble, msg.role === 'user' ? styles.userBubble : styles.aiBubble]}>
-                {msg.role === 'assistant' && <Text style={styles.aiLabel}>Budget Buddy</Text>}
+                {msg.role === 'assistant' && <Text style={styles.aiLabel}>Job Buddy</Text>}
                 <Text style={msg.role === 'user' ? styles.userText : styles.aiText}>
                   {msg.content}
                 </Text>
@@ -149,7 +174,7 @@ export default function BudgetBuddyScreen({ navigation }) {
           {isLoading && (
             <View style={styles.msgRowAI}>
               <View style={styles.msgAvatar}>
-                <Text style={styles.msgAvatarEmoji}>🤖</Text>
+                <Text style={styles.msgAvatarEmoji}>💼</Text>
               </View>
               <View style={[styles.bubble, styles.aiBubble, styles.typingRow]}>
                 <ActivityIndicator size="small" color={Colors.primary} />
@@ -158,7 +183,7 @@ export default function BudgetBuddyScreen({ navigation }) {
             </View>
           )}
 
-          {/* Quick-tap chips after conversation starts */}
+          {/* Quick chips after conversation starts */}
           {hasMessages && !isLoading && (
             <View style={styles.chipsWrap}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
@@ -178,7 +203,7 @@ export default function BudgetBuddyScreen({ navigation }) {
         <View style={styles.inputBar}>
           <TextInput
             style={styles.input}
-            placeholder="Ask about restaurants, budgets, recipes..."
+            placeholder="What kind of work are you looking for?"
             placeholderTextColor={Colors.textMuted}
             value={inputText}
             onChangeText={setInputText}
@@ -205,7 +230,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
 
-  /* Header */
   header: {
     backgroundColor: Colors.surface,
     paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14,
@@ -223,11 +247,9 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary, letterSpacing: -0.3 },
   headerSub: { fontSize: 11, color: Colors.textLight, marginTop: 1 },
 
-  /* Scroll */
   scroll: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 12 },
 
-  /* Welcome */
   welcome: { paddingTop: 16, paddingBottom: 12 },
   bigAvatar: {
     width: 72, height: 72, borderRadius: 36,
@@ -254,7 +276,23 @@ const styles = StyleSheet.create({
   cardEmoji: { fontSize: 24, marginBottom: 8 },
   cardLabel: { fontSize: 13, fontWeight: '600', color: Colors.textPrimary, lineHeight: 18 },
 
-  /* Messages */
+  boardsTitle: {
+    fontSize: 11, fontWeight: '600', color: Colors.textLight,
+    letterSpacing: 0.8, textTransform: 'uppercase',
+    marginTop: 8, marginBottom: 12,
+  },
+  boardsGrid: { gap: 8 },
+  boardCard: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderWidth: 1, borderColor: Colors.border,
+    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13,
+    gap: 10,
+  },
+  boardEmoji: { fontSize: 18 },
+  boardName: { flex: 1, fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
+  boardArrow: { fontSize: 20, color: Colors.textLight },
+
   msgRow: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 12 },
   msgRowUser: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 12, justifyContent: 'flex-end' },
   msgRowAI: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 12, justifyContent: 'flex-start' },
@@ -281,7 +319,6 @@ const styles = StyleSheet.create({
   typingRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10 },
   typingText: { fontSize: 13, color: Colors.textMuted },
 
-  /* Chips */
   chipsWrap: { marginTop: 4, marginBottom: 4, marginHorizontal: -16 },
   chips: { paddingHorizontal: 16, gap: 8 },
   chip: {
@@ -292,7 +329,6 @@ const styles = StyleSheet.create({
   chipEmoji: { fontSize: 13 },
   chipText: { fontSize: 12, fontWeight: '600', color: Colors.primary },
 
-  /* Input */
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 10,
     paddingHorizontal: 12, paddingVertical: 10,

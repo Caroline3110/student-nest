@@ -21,6 +21,10 @@ import TodoScreen from './screens/study/TodoScreen';
 import ExamsScreen from './screens/study/ExamsScreen';
 import TimetableScreen from './screens/study/TimetableScreen';
 import TutorFinderScreen from './screens/TutorFinderScreen';
+import RoommateFinderScreen from './screens/RoommateFinderScreen';
+import HousekeeperScreen from './screens/HousekeeperScreen';
+import PartTimeJobsScreen from './screens/PartTimeJobsScreen';
+import MindNestScreen from './screens/MindNestScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -75,6 +79,10 @@ export default function App() {
     <Stack.Screen name="Exams" component={ExamsScreen} /> 
     <Stack.Screen name="Timetable" component={TimetableScreen} />
     <Stack.Screen name="TutorFinder" component={TutorFinderScreen} />
+    <Stack.Screen name="RoommateFinder" component={RoommateFinderScreen} />
+    <Stack.Screen name="Housekeeper" component={HousekeeperScreen} />
+    <Stack.Screen name="PartTimeJobs" component={PartTimeJobsScreen} />
+    <Stack.Screen name="Wellbeing" component={MindNestScreen} />
   </>
 ) : (
   <>

@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../constants/Colors';
+import useIsAdmin from '../hooks/useIsAdmin';
 import { db } from '../firebase';
 import { collection, addDoc, query, where, onSnapshot } from 'firebase/firestore';
 
@@ -15,8 +16,6 @@ const SUBJECTS = [
   'History', 'Business', 'Psychology', 'Engineering', 'Statistics',
 ];
 
-const ADMIN_PIN = '0000';
-
 export default function TutorFinderScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState('find');
   const [tutors, setTutors] = useState([]);
@@ -24,10 +23,9 @@ export default function TutorFinderScreen({ navigation }) {
   const [search, setSearch] = useState('');
   const [subject, setSubject] = useState('All');
 
-  // Hidden admin
+  // Hidden admin (only opens for users listed in /admins)
+  const isAdmin = useIsAdmin();
   const [tapCount, setTapCount] = useState(0);
-  const [pinVisible, setPinVisible] = useState(false);
-  const [pinInput, setPinInput] = useState('');
   const [adminVisible, setAdminVisible] = useState(false);
 
   // Application form
@@ -65,20 +63,9 @@ export default function TutorFinderScreen({ navigation }) {
     const next = tapCount + 1;
     if (next >= 5) {
       setTapCount(0);
-      setPinInput('');
-      setPinVisible(true);
+      if (isAdmin) setAdminVisible(true);
     } else {
       setTapCount(next);
-    }
-  };
-
-  const checkPin = () => {
-    if (pinInput === ADMIN_PIN) {
-      setPinVisible(false);
-      setAdminVisible(true);
-    } else {
-      Alert.alert('Wrong PIN', 'Incorrect PIN, try again.');
-      setPinInput('');
     }
   };
 
@@ -155,18 +142,23 @@ export default function TutorFinderScreen({ navigation }) {
     return matchSearch && matchSubject;
   });
 
+  const openLink = (url) => {
+    Linking.openURL(url).catch(() =>
+      Alert.alert('Could not open', 'No app is available to handle this contact method.'));
+  };
+
   const contactTutor = (tutor) => {
     const options = [];
     if (tutor.contact) {
       options.push({
         text: 'WhatsApp',
-        onPress: () => Linking.openURL(`https://wa.me/${tutor.contact.replace(/\D/g, '')}`),
+        onPress: () => openLink(`https://wa.me/${tutor.contact.replace(/\D/g, '')}`),
       });
     }
     if (tutor.email) {
       options.push({
         text: 'Email',
-        onPress: () => Linking.openURL(`mailto:${tutor.email}?subject=Tutoring enquiry via Student Nest`),
+        onPress: () => openLink(`mailto:${tutor.email.trim()}?subject=${encodeURIComponent('Tutoring enquiry via Student Nest')}`),
       });
     }
     options.push({ text: 'Cancel', style: 'cancel' });
@@ -354,35 +346,6 @@ export default function TutorFinderScreen({ navigation }) {
           </ScrollView>
         </KeyboardAvoidingView>
       )}
-
-      {/* ── PIN MODAL ── */}
-      <Modal visible={pinVisible} transparent animationType="fade" onRequestClose={() => setPinVisible(false)}>
-        <View style={styles.overlay}>
-          <View style={styles.pinCard}>
-            <Text style={styles.pinTitle}>Admin Access</Text>
-            <Text style={styles.pinSub}>Enter PIN to continue</Text>
-            <TextInput
-              style={styles.pinInput}
-              placeholder="••••"
-              placeholderTextColor={Colors.textMuted}
-              value={pinInput}
-              onChangeText={setPinInput}
-              keyboardType="number-pad"
-              secureTextEntry
-              maxLength={6}
-              autoFocus
-            />
-            <View style={styles.pinBtns}>
-              <TouchableOpacity style={styles.pinCancel} onPress={() => { setPinVisible(false); setTapCount(0); }}>
-                <Text style={styles.pinCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.pinConfirm} onPress={checkPin}>
-                <Text style={styles.pinConfirmText}>Enter</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
 
       {/* ── ADMIN ADD TUTOR MODAL ── */}
       <Modal visible={adminVisible} animationType="slide" onRequestClose={() => setAdminVisible(false)}>
@@ -573,33 +536,6 @@ const styles = StyleSheet.create({
     borderRadius: 10, paddingVertical: 11, paddingHorizontal: 24,
   },
   successBtnText: { fontSize: 14, fontWeight: '500', color: Colors.textSecondary },
-
-  /* PIN modal */
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: 32 },
-  pinCard: {
-    backgroundColor: Colors.surface, borderRadius: 16,
-    padding: 24, width: '100%',
-  },
-  pinTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
-  pinSub: { fontSize: 13, color: Colors.textSecondary, marginBottom: 16 },
-  pinInput: {
-    backgroundColor: Colors.background, borderRadius: 10,
-    borderWidth: 1, borderColor: Colors.border,
-    paddingHorizontal: 14, paddingVertical: 12,
-    fontSize: 20, color: Colors.textPrimary,
-    letterSpacing: 8, textAlign: 'center', marginBottom: 16,
-  },
-  pinBtns: { flexDirection: 'row', gap: 10 },
-  pinCancel: {
-    flex: 1, paddingVertical: 12, borderRadius: 10,
-    borderWidth: 1, borderColor: Colors.border, alignItems: 'center',
-  },
-  pinCancelText: { fontSize: 14, fontWeight: '500', color: Colors.textSecondary },
-  pinConfirm: {
-    flex: 1, paddingVertical: 12, borderRadius: 10,
-    backgroundColor: Colors.primary, alignItems: 'center',
-  },
-  pinConfirmText: { fontSize: 14, fontWeight: '600', color: Colors.white },
 
   /* Admin modal */
   adminScreen: { flex: 1, backgroundColor: Colors.background },

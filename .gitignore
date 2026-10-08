@@ -34,10 +34,8 @@ yarn-error.*
 .env*.local
 .env
 
-# API keys
+# API keys (no longer used by the app; the Anthropic key is a Cloud Functions secret)
 constants/config.js
-
-firebase.js
 
 # typescript
 *.tsbuildinfo
