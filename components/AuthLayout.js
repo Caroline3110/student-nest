@@ -6,7 +6,7 @@ import { LanguageToggle } from './FormField';
 import FadeIn from './FadeIn';
 import PressableScale from './PressableScale';
 
-// Shared frame for Login and Signup: back button, emoji badge, big heading, then the form.
+// Shared frame for Login, Signup and Forgot Password: back button, emoji badge, big heading, then the form.
 export default function AuthLayout({ navigation, emoji, badgeColor, title, subtitle, children }) {
   const insets = useSafeAreaInsets();
   const t = useT();

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Text, View, Alert } from 'react-native';
+import { Text, View, Alert, StyleSheet } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import Colors from '../constants/Colors';
@@ -57,6 +57,14 @@ export default function LoginScreen({ navigation }) {
           autoComplete="password"
         />
         <PressableScale
+          style={styles.forgot}
+          scaleTo={0.97}
+          hitSlop={8}
+          onPress={() => navigation.navigate('ForgotPassword', { email: email.trim() })}
+        >
+          <Text style={styles.forgotText}>{t('auth.forgotPassword')}</Text>
+        </PressableScale>
+        <PressableScale
           style={[s.button, loading && s.buttonDisabled]}
           onPress={handleLogin}
           disabled={loading}
@@ -74,3 +82,9 @@ export default function LoginScreen({ navigation }) {
     </AuthLayout>
   );
 }
+
+const styles = StyleSheet.create({
+  // Pulled up under the password field so it reads as part of it.
+  forgot: { alignSelf: 'flex-end', marginTop: -8, paddingVertical: 2, paddingHorizontal: 4 },
+  forgotText: { fontSize: 13, fontWeight: '700', color: Colors.primary },
+});

@@ -10,6 +10,7 @@ import { ProfileProvider, useProfile } from './hooks/useProfile';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
+import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 import HomeScreen from './screens/HomeScreen';
 import StudentLivingScreen from './screens/housing/StudentLivingScreen';
 import AccommodationScreen from './screens/housing/AccommodationScreen';
@@ -99,6 +100,7 @@ function AppStack({ signedIn }) {
           <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ animation: 'fade' }} />
           <Stack.Screen name="Login" component={LoginScreen} options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="Signup" component={SignupScreen} options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ animation: 'slide_from_right' }} />
         </>
       ) : !profile?.profileComplete ? (
         <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
