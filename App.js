@@ -50,9 +50,14 @@ export default function App() {
   }, []);
   useEffect(() => {
   const requestPermissions = async () => {
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') {
-      console.log('Notification permissions not granted');
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Notification permissions not granted');
+      }
+    } catch (e) {
+      // Not supported on web.
+      console.log('Notifications unavailable:', e.message);
     }
   };
 
