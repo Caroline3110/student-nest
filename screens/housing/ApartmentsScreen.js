@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useT } from '../../i18n';
 
 export default function ApartmentsScreen({ navigation }) {
+  const t = useT();
   const [location, setLocation] = useState('');
   const [bedrooms, setBedrooms] = useState('1');
   const [priceMin, setPriceMin] = useState('');
@@ -11,7 +13,7 @@ export default function ApartmentsScreen({ navigation }) {
 
   const handleSearch = () => {
     if (!location.trim()) {
-      Alert.alert('Missing location', 'Please enter a postcode to search.');
+      Alert.alert(t('housing.missingLocation'), t('housing.enterPostcode'));
       return;
     }
     navigation.navigate('ApartmentResults', { searchParams: { location, bedrooms, priceMin, priceMax } });
@@ -25,16 +27,16 @@ export default function ApartmentsScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Apartments</Text>
-        <Text style={styles.headerSubtitle}>Search by your preferences</Text>
+        <Text style={styles.headerTitle}>{t('housing.apartments')}</Text>
+        <Text style={styles.headerSubtitle}>{t('housing.searchPrefs')}</Text>
       </View>
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.body}>
           <View style={styles.formCard}>
-            <Text style={styles.label}>Location</Text>
+            <Text style={styles.label}>{t('housing.location')}</Text>
             <TextInput
               style={styles.input}
               placeholder="e.g. WC1E 6BT"
@@ -43,11 +45,11 @@ export default function ApartmentsScreen({ navigation }) {
               onChangeText={setLocation}
               autoCapitalize="characters"
             />
-            <Text style={styles.hint}>Enter a London postcode</Text>
+            <Text style={styles.hint}>{t('housing.postcodeHint')}</Text>
           </View>
 
           <View style={styles.formCard}>
-            <Text style={styles.label}>Bedrooms</Text>
+            <Text style={styles.label}>{t('housing.bedrooms')}</Text>
             <View style={styles.bedRow}>
               {['1', '2'].map(n => (
                 <TouchableOpacity
@@ -56,7 +58,7 @@ export default function ApartmentsScreen({ navigation }) {
                   onPress={() => setBedrooms(n)}
                 >
                   <Text style={[styles.bedBtnText, bedrooms === n && styles.bedBtnTextActive]}>
-                    {n} bedroom{n === '2' ? 's' : ''}
+                    {t(n === '1' ? 'housing.oneBedroom' : 'housing.nBedrooms', { count: n })}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -64,13 +66,13 @@ export default function ApartmentsScreen({ navigation }) {
           </View>
 
           <View style={styles.formCard}>
-            <Text style={styles.label}>Weekly budget</Text>
+            <Text style={styles.label}>{t('housing.weeklyBudget')}</Text>
             <View style={styles.priceRow}>
               <View style={styles.priceWrap}>
                 <Text style={styles.currency}>£</Text>
                 <TextInput
                   style={styles.priceInput}
-                  placeholder="Min"
+                  placeholder={t('housing.min')}
                   placeholderTextColor={Colors.textMuted}
                   value={priceMin}
                   onChangeText={setPriceMin}
@@ -82,7 +84,7 @@ export default function ApartmentsScreen({ navigation }) {
                 <Text style={styles.currency}>£</Text>
                 <TextInput
                   style={styles.priceInput}
-                  placeholder="Max"
+                  placeholder={t('housing.max')}
                   placeholderTextColor={Colors.textMuted}
                   value={priceMax}
                   onChangeText={setPriceMax}
@@ -90,19 +92,19 @@ export default function ApartmentsScreen({ navigation }) {
                 />
               </View>
             </View>
-            <Text style={styles.hint}>Leave blank for no limit</Text>
+            <Text style={styles.hint}>{t('housing.noLimit')}</Text>
           </View>
 
           <TouchableOpacity style={styles.searchBtn} onPress={handleSearch} activeOpacity={0.85}>
-            <Text style={styles.searchBtnText}>Search apartments</Text>
+            <Text style={styles.searchBtnText}>{t('housing.searchApartments')}</Text>
           </TouchableOpacity>
 
-          <Text style={styles.popularLabel}>Popular searches</Text>
+          <Text style={styles.popularLabel}>{t('housing.popular')}</Text>
           <TouchableOpacity style={styles.popularChip} onPress={() => fillSearch('WC1E 6BT', '1', '150', '250')}>
-            <Text style={styles.popularChipText}>Near UCL · 1 bed · £150–250/week</Text>
+            <Text style={styles.popularChipText}>{t('housing.popularUcl')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.popularChip} onPress={() => fillSearch('SE1 7EH', '2', '200', '300')}>
-            <Text style={styles.popularChipText}>Near King's College · 2 bed · £200–300/week</Text>
+            <Text style={styles.popularChipText}>{t('housing.popularKings')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

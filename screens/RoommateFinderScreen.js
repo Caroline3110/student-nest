@@ -6,6 +6,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../constants/Colors';
+import { useProfile } from '../hooks/useProfile';
+import { useT } from '../i18n';
 import { auth, db } from '../firebase';
 import { collection, doc, setDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
 
@@ -20,6 +22,7 @@ const initials = (name) =>
   (name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
 export default function RoommateFinderScreen({ navigation }) {
+  const t = useT();
   const [activeTab, setActiveTab] = useState('find');
   const [roommates, setRoomates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,8 +30,13 @@ export default function RoommateFinderScreen({ navigation }) {
   const [budgetFilter, setBudgetFilter] = useState('All');
 
   // Add profile form
+  // Start from the student's profile so they don't type it twice.
+  const profile = useProfile();
   const [form, setForm] = useState({
-    name: '', nationality: '', university: '', year: '',
+    name: profile?.name || '',
+    nationality: '',
+    university: profile?.university || '',
+    year: profile?.year ? t(`profile.years.${profile.year}`) : '',
     budget: '', area: '', hobbies: '', about: '',
     whatsapp: '', email: '',
   });
@@ -78,11 +86,11 @@ export default function RoommateFinderScreen({ navigation }) {
 
   const submitProfile = async () => {
     if (!form.name.trim()) {
-      Alert.alert('Missing field', 'Please enter your name.');
+      Alert.alert(t('roommates.missingField'), t('roommates.enterName'));
       return;
     }
     if (!form.whatsapp.trim() && !form.email.trim()) {
-      Alert.alert('Contact required', 'Please add a WhatsApp number or email so others can reach you.');
+      Alert.alert(t('roommates.contactRequired'), t('roommates.addContact'));
       return;
     }
     setSubmitting(true);
@@ -110,7 +118,7 @@ export default function RoommateFinderScreen({ navigation }) {
       setLifestyle([]);
     } catch (err) {
       console.error('Roommate submit error:', err);
-      Alert.alert('Error', 'Could not submit. Please try again.');
+      Alert.alert(t('common.error'), t('tutors.submitFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -118,7 +126,7 @@ export default function RoommateFinderScreen({ navigation }) {
 
   const openLink = (url) => {
     Linking.openURL(url).catch(() =>
-      Alert.alert('Could not open', 'No app is available to handle this contact method.'));
+      Alert.alert(t('tutors.couldNotOpen'), t('tutors.noApp')));
   };
 
   const contactRoommate = (r) => {
@@ -131,12 +139,12 @@ export default function RoommateFinderScreen({ navigation }) {
     }
     if (r.email) {
       options.push({
-        text: 'Email',
+        text: t('auth.email'),
         onPress: () => openLink(`mailto:${r.email.trim()}?subject=${encodeURIComponent('Roommate enquiry via Student Nest')}`),
       });
     }
-    options.push({ text: 'Cancel', style: 'cancel' });
-    Alert.alert(`Contact ${r.name}`, 'How would you like to reach them?', options);
+    options.push({ text: t('common.cancel'), style: 'cancel' });
+    Alert.alert(t('tutors.contactName', { name: r.name }), t('tutors.howReach'), options);
   };
 
   return (
@@ -145,17 +153,17 @@ export default function RoommateFinderScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Roommate Finder</Text>
+        <Text style={styles.headerTitle}>{t('roommates.title')}</Text>
         <Text style={styles.headerSub}>{roommates.length} profile{roommates.length !== 1 ? 's' : ''} listed</Text>
       </View>
 
       {/* Tabs */}
       <View style={styles.tabBar}>
         {[
-          { key: 'find', label: 'Find a Roommate' },
-          { key: 'add', label: 'Add My Profile' },
+          { key: 'find', label: t('roommates.findTab') },
+          { key: 'add', label: t('roommates.addTab') },
         ].map(tab => (
           <TouchableOpacity
             key={tab.key}
@@ -175,7 +183,7 @@ export default function RoommateFinderScreen({ navigation }) {
 
           <TextInput
             style={styles.searchBar}
-            placeholder="Search by name, university or area..."
+            placeholder={t('roommates.searchPlaceholder')}
             placeholderTextColor={Colors.textMuted}
             value={search}
             onChangeText={setSearch}
@@ -189,7 +197,7 @@ export default function RoommateFinderScreen({ navigation }) {
                 style={[styles.chip, budgetFilter === f && styles.chipActive]}
                 onPress={() => setBudgetFilter(f)}
               >
-                <Text style={[styles.chipText, budgetFilter === f && styles.chipTextActive]}>{f}</Text>
+                <Text style={[styles.chipText, budgetFilter === f && styles.chipTextActive]}>{t(`roommates.budgetFilters.${f}`)}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -198,11 +206,11 @@ export default function RoommateFinderScreen({ navigation }) {
             <ActivityIndicator color={Colors.primary} style={styles.loader} />
           ) : filtered.length === 0 ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No profiles found</Text>
+              <Text style={styles.emptyTitle}>{t('roommates.noneFound')}</Text>
               <Text style={styles.emptySub}>
                 {roommates.length === 0
-                  ? 'No one has posted yet. Be the first!'
-                  : 'Try adjusting your search or budget filter.'}
+                  ? t('roommates.noneYet')
+                  : t('roommates.tryDifferent')}
               </Text>
             </View>
           ) : (
@@ -223,21 +231,21 @@ export default function RoommateFinderScreen({ navigation }) {
                   </View>
                   {r.budget > 0 && (
                     <View style={styles.budgetBadge}>
-                      <Text style={styles.budgetText}>£{r.budget}/mo</Text>
+                      <Text style={styles.budgetText}>£{r.budget}{t('roommates.perMonth')}</Text>
                     </View>
                   )}
                 </View>
 
                 {r.area ? (
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Area</Text>
+                    <Text style={styles.infoLabel}>{t('roommates.area')}</Text>
                     <Text style={styles.infoValue}>{r.area}</Text>
                   </View>
                 ) : null}
 
                 {r.hobbies ? (
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Hobbies</Text>
+                    <Text style={styles.infoLabel}>{t('roommates.hobbies')}</Text>
                     <Text style={styles.infoValue}>{r.hobbies}</Text>
                   </View>
                 ) : null}
@@ -246,7 +254,7 @@ export default function RoommateFinderScreen({ navigation }) {
                   <View style={styles.tagRow}>
                     {r.lifestyle.map((l, i) => (
                       <View key={i} style={styles.tag}>
-                        <Text style={styles.tagText}>{l}</Text>
+                        <Text style={styles.tagText}>{t(`roommates.lifestyle.${l}`)}</Text>
                       </View>
                     ))}
                   </View>
@@ -257,7 +265,7 @@ export default function RoommateFinderScreen({ navigation }) {
                 ) : null}
 
                 <TouchableOpacity style={styles.contactBtn} onPress={() => contactRoommate(r)} activeOpacity={0.8}>
-                  <Text style={styles.contactBtnText}>Contact {r.name.split(' ')[0]}</Text>
+                  <Text style={styles.contactBtnText}>{t('tutors.contactName', { name: r.name.split(' ')[0] })}</Text>
                 </TouchableOpacity>
               </View>
             ))
@@ -275,28 +283,28 @@ export default function RoommateFinderScreen({ navigation }) {
                 <View style={styles.successCircle}>
                   <Text style={styles.successIcon}>✓</Text>
                 </View>
-                <Text style={styles.successTitle}>Profile posted!</Text>
+                <Text style={styles.successTitle}>{t('roommates.posted')}</Text>
                 <Text style={styles.successSub}>
-                  Your profile is now live. Other students can find and contact you directly.
+                  {t('roommates.postedSub')}
                 </Text>
                 <TouchableOpacity style={styles.successBtn} onPress={() => { setDone(false); setActiveTab('find'); }}>
-                  <Text style={styles.successBtnText}>Browse roommates</Text>
+                  <Text style={styles.successBtnText}>{t('roommates.browse')}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <>
                 <Text style={styles.formIntro}>
-                  Tell others about yourself. Your profile goes live immediately and other students can contact you directly.
+                  {t('roommates.intro')}
                 </Text>
 
                 {[
-                  { label: 'Full name *', key: 'name', max: 80, placeholder: 'e.g. Layla Hassan' },
-                  { label: 'Nationality', key: 'nationality', max: 60, placeholder: 'e.g. British, Lebanese, French' },
-                  { label: 'University', key: 'university', max: 120, placeholder: 'e.g. King\'s College London' },
-                  { label: 'Year of study', key: 'year', max: 30, placeholder: 'e.g. 2nd year, Masters' },
-                  { label: 'Monthly budget (£)', key: 'budget', max: 10, placeholder: 'e.g. 800', keyboard: 'decimal-pad' },
-                  { label: 'Preferred area', key: 'area', max: 120, placeholder: 'e.g. Shoreditch, Hackney, Central London' },
-                  { label: 'Hobbies & interests', key: 'hobbies', max: 300, placeholder: 'e.g. Gym, cooking, reading, gaming' },
+                  { label: `${t('profile.name')} *`, key: 'name', max: 80, placeholder: t('profile.namePlaceholder') },
+                  { label: t('roommates.nationality'), key: 'nationality', max: 60, placeholder: t('roommates.nationalityPlaceholder') },
+                  { label: t('profile.university'), key: 'university', max: 120, placeholder: t('profile.universityPlaceholder') },
+                  { label: t('profile.year'), key: 'year', max: 30, placeholder: t('tutors.yearPlaceholder') },
+                  { label: t('roommates.budget'), key: 'budget', max: 10, placeholder: '800', keyboard: 'decimal-pad' },
+                  { label: t('roommates.preferredArea'), key: 'area', max: 120, placeholder: t('roommates.areaPlaceholder') },
+                  { label: t('roommates.hobbiesLabel'), key: 'hobbies', max: 300, placeholder: t('roommates.hobbiesPlaceholder') },
                 ].map(f => (
                   <View key={f.key} style={styles.field}>
                     <Text style={styles.fieldLabel}>{f.label}</Text>
@@ -314,7 +322,7 @@ export default function RoommateFinderScreen({ navigation }) {
 
                 {/* Lifestyle chips */}
                 <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>Lifestyle (select all that apply)</Text>
+                  <Text style={styles.fieldLabel}>{t('roommates.lifestyleLabel')}</Text>
                   <View style={styles.lifestyleGrid}>
                     {LIFESTYLE_OPTIONS.map(opt => (
                       <TouchableOpacity
@@ -323,7 +331,7 @@ export default function RoommateFinderScreen({ navigation }) {
                         onPress={() => toggleLifestyle(opt)}
                       >
                         <Text style={[styles.lifestyleText, lifestyle.includes(opt) && styles.lifestyleTextActive]}>
-                          {opt}
+                          {t(`roommates.lifestyle.${opt}`)}
                         </Text>
                       </TouchableOpacity>
                     ))}
@@ -332,10 +340,10 @@ export default function RoommateFinderScreen({ navigation }) {
 
                 {/* About / looking for */}
                 <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>What you're looking for</Text>
+                  <Text style={styles.fieldLabel}>{t('roommates.lookingFor')}</Text>
                   <TextInput
                     style={[styles.fieldInput, styles.fieldInputMulti]}
-                    placeholder="Describe your ideal living situation, housemates, location..."
+                    placeholder={t('roommates.lookingForPlaceholder')}
                     placeholderTextColor={Colors.textMuted}
                     value={form.about}
                     onChangeText={v => setForm(p => ({ ...p, about: v }))}
@@ -346,10 +354,10 @@ export default function RoommateFinderScreen({ navigation }) {
                 </View>
 
                 <View style={styles.contactSection}>
-                  <Text style={styles.contactSectionTitle}>Contact details (at least one required)</Text>
+                  <Text style={styles.contactSectionTitle}>{t('roommates.contactDetails')}</Text>
                   {[
-                    { label: 'WhatsApp number', key: 'whatsapp', max: 30, placeholder: '+44 7700 900000', keyboard: 'phone-pad' },
-                    { label: 'Email address', key: 'email', max: 120, placeholder: 'your@email.com', keyboard: 'email-address' },
+                    { label: t('roommates.whatsapp'), key: 'whatsapp', max: 30, placeholder: '+44 7700 900000', keyboard: 'phone-pad' },
+                    { label: t('auth.email'), key: 'email', max: 120, placeholder: 'your@email.com', keyboard: 'email-address' },
                   ].map(f => (
                     <View key={f.key} style={styles.field}>
                       <Text style={styles.fieldLabel}>{f.label}</Text>
@@ -375,7 +383,7 @@ export default function RoommateFinderScreen({ navigation }) {
                 >
                   {submitting
                     ? <ActivityIndicator color={Colors.white} />
-                    : <Text style={styles.submitBtnText}>Post my profile</Text>}
+                    : <Text style={styles.submitBtnText}>{t('roommates.post')}</Text>}
                 </TouchableOpacity>
                 <View style={{ height: 40 }} />
               </>

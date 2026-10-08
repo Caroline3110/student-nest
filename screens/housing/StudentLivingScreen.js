@@ -1,16 +1,18 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useT } from '../../i18n';
 
 export default function StudentLivingScreen({ navigation }) {
+  const t = useT();
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Student Living</Text>
-        <Text style={styles.headerSubtitle}>Where do you want to search?</Text>
+        <Text style={styles.headerTitle}>{t('home.features.living.name')}</Text>
+        <Text style={styles.headerSubtitle}>{t('housing.whereSearch')}</Text>
       </View>
 
       <View style={styles.content}>
@@ -23,8 +25,8 @@ export default function StudentLivingScreen({ navigation }) {
             <Text style={styles.iconText}>🏢</Text>
           </View>
           <View style={styles.optionText}>
-            <Text style={styles.optionTitle}>Accommodation</Text>
-            <Text style={styles.optionDesc}>Browse Scape, IQ, Chapter and more</Text>
+            <Text style={styles.optionTitle}>{t('housing.accommodation')}</Text>
+            <Text style={styles.optionDesc}>{t('housing.accommodationDesc')}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
@@ -38,8 +40,8 @@ export default function StudentLivingScreen({ navigation }) {
             <Text style={styles.iconText}>🔍</Text>
           </View>
           <View style={styles.optionText}>
-            <Text style={styles.optionTitle}>Apartments</Text>
-            <Text style={styles.optionDesc}>Search by price, area and bedrooms</Text>
+            <Text style={styles.optionTitle}>{t('housing.apartments')}</Text>
+            <Text style={styles.optionDesc}>{t('housing.apartmentsDesc')}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>

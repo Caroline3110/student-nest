@@ -4,111 +4,40 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { signOut } from 'firebase/auth';
-import { auth } from '../firebase';
 import Colors from '../constants/Colors';
+import { useT } from '../i18n';
+import { useProfile } from '../hooks/useProfile';
+
+const FEATURES = [
+  { key: 'living', emoji: '🏠', route: 'StudentLiving' },
+  { key: 'budget', emoji: '💰', route: 'BudgetTracker' },
+  { key: 'study', emoji: '📚', route: 'StudyDashboard' },
+  { key: 'tutors', emoji: '🎓', route: 'TutorFinder' },
+  { key: 'roommates', emoji: '🤝', route: 'RoommateFinder' },
+  { key: 'housekeeper', emoji: '✨', route: 'Housekeeper' },
+  { key: 'jobs', emoji: '💼', route: 'PartTimeJobs' },
+  { key: 'wellbeing', emoji: '🌿', route: 'Wellbeing' },
+];
 
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to logout. Please try again.');
-    }
-  };
-
-  const features = [
-    {
-      id: 1,
-      name: 'Student Living',
-      emoji: '🏠',
-      screen: 'StudentLiving',
-      desc: 'Find your perfect home',
-    },
-    {
-      id: 2,
-      name: 'Budget Tracker',
-      emoji: '💰',
-      screen: 'BudgetTracker',
-      desc: 'Manage your finances',
-    },
-    {
-      id: 3,
-      name: 'Study Planner',
-      emoji: '📚',
-      screen: 'Calendar',
-      desc: 'Organise your work',
-    },
-    {
-      id: 4,
-      name: 'Tutor Finder',
-      emoji: '🎓',
-      screen: 'TutorFinder',
-      desc: 'Get academic support',
-    },
-    {
-      id: 5,
-      name: 'Roommates',
-      emoji: '🤝',
-      screen: 'RoommateFinder',
-      desc: 'Find flatmates',
-    },
-    {
-      id: 6,
-      name: 'Housekeeper',
-      emoji: '✨',
-      screen: 'Housekeeper',
-      desc: 'Book cleaning',
-    },
-    {
-      id: 7,
-      name: 'Part-time Jobs',
-      emoji: '💼',
-      screen: 'PartTimeJobs',
-      desc: 'Student-friendly work',
-    },
-    {
-      id: 8,
-      name: 'MindNest',
-      emoji: '🌿',
-      screen: 'Wellbeing',
-      desc: 'Wellbeing & support',
-    },
-  ];
-
-  const handleFeaturePress = (feature) => {
-    const routes = {
-      StudentLiving: 'StudentLiving',
-      BudgetTracker: 'BudgetTracker',
-      Calendar: 'StudyDashboard',
-      TutorFinder: 'TutorFinder',
-      RoommateFinder: 'RoommateFinder',
-      Housekeeper: 'Housekeeper',
-      PartTimeJobs: 'PartTimeJobs',
-      Wellbeing: 'Wellbeing',
-    };
-    const route = routes[feature.screen];
-    if (route) {
-      navigation.navigate(route);
-    } else {
-      Alert.alert(feature.name, 'This feature is coming soon.', [{ text: 'OK' }]);
-    }
-  };
+  const t = useT();
+  const profile = useProfile();
+  const firstName = profile?.name?.split(' ')[0];
 
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <View>
-          <Text style={styles.greeting}>Welcome back 👋</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.greeting}>
+            {firstName ? t('home.greetingName', { name: firstName }) : t('home.greeting')}
+          </Text>
           <Text style={styles.headerTitle}>Student Nest</Text>
         </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Log out</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.settingsButton}>
+          <Text style={styles.settingsText}>⚙︎  {t('settings.title')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -120,21 +49,21 @@ export default function HomeScreen({ navigation }) {
           { paddingBottom: Math.max(insets.bottom, 24) },
         ]}
       >
-        <Text style={styles.sectionLabel}>Your features</Text>
+        <Text style={styles.sectionLabel}>{t('home.yourFeatures')}</Text>
 
         <View style={styles.grid}>
-          {features.map((feature) => (
+          {FEATURES.map((feature) => (
             <TouchableOpacity
-              key={feature.id}
+              key={feature.key}
               style={styles.card}
-              onPress={() => handleFeaturePress(feature)}
+              onPress={() => navigation.navigate(feature.route)}
               activeOpacity={0.75}
             >
               <View style={styles.emojiWrap}>
                 <Text style={styles.emoji}>{feature.emoji}</Text>
               </View>
-              <Text style={styles.cardName}>{feature.name}</Text>
-              <Text style={styles.cardDesc}>{feature.desc}</Text>
+              <Text style={styles.cardName}>{t(`home.features.${feature.key}.name`)}</Text>
+              <Text style={styles.cardDesc}>{t(`home.features.${feature.key}.desc`)}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -169,14 +98,14 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     letterSpacing: -0.5,
   },
-  logoutButton: {
+  settingsButton: {
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
-  logoutText: {
+  settingsText: {
     color: Colors.textSecondary,
     fontSize: 12,
     fontWeight: '500',

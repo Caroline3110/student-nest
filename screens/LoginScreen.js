@@ -7,25 +7,28 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import Colors from '../constants/Colors';
+import { useT } from '../i18n';
+import { LanguageToggle } from '../components/FormField';
 
 export default function LoginScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const t = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) { Alert.alert('Error', 'Please fill in all fields'); return; }
+    if (!email || !password) { Alert.alert(t('common.error'), t('common.fillAllFields')); return; }
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       setLoading(false);
-      let msg = 'Login failed. Please try again.';
-      if (error.code === 'auth/invalid-email') msg = 'Invalid email address';
-      else if (error.code === 'auth/user-not-found') msg = 'No account found with this email';
-      else if (error.code === 'auth/wrong-password') msg = 'Incorrect password';
-      Alert.alert('Login failed', msg);
+      let msg = t('auth.loginFailedGeneric');
+      if (error.code === 'auth/invalid-email') msg = t('auth.invalidEmail');
+      else if (error.code === 'auth/user-not-found') msg = t('auth.userNotFound');
+      else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') msg = t('auth.wrongPassword');
+      Alert.alert(t('auth.loginFailed'), msg);
     }
   };
 
@@ -36,19 +39,22 @@ export default function LoginScreen({ navigation }) {
     >
       <ScrollView bounces={false} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-        <View style={[styles.hero, { paddingTop: insets.top + 48 }]}>
+        <View style={[styles.langRow, { paddingTop: insets.top + 12 }]}>
+          <LanguageToggle />
+        </View>
+        <View style={[styles.hero, { paddingTop: 24 }]}>
           <Text style={styles.heroEmoji}>🏠</Text>
           <Text style={styles.heroTitle}>Student Nest</Text>
-          <Text style={styles.heroTagline}>Your student life, sorted.</Text>
+          <Text style={styles.heroTagline}>{t('auth.tagline')}</Text>
         </View>
 
         <View style={styles.formSection}>
-          <Text style={styles.heading}>Welcome back</Text>
-          <Text style={styles.subheading}>Sign in to your account</Text>
+          <Text style={styles.heading}>{t('auth.welcomeBack')}</Text>
+          <Text style={styles.subheading}>{t('auth.signInSub')}</Text>
 
           <View style={styles.form}>
             <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>Email</Text>
+              <Text style={styles.inputLabel}>{t('auth.email')}</Text>
               <TextInput
                 style={styles.input}
                 placeholder="you@example.com"
@@ -62,7 +68,7 @@ export default function LoginScreen({ navigation }) {
             </View>
 
             <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>Password</Text>
+              <Text style={styles.inputLabel}>{t('auth.password')}</Text>
               <TextInput
                 style={styles.input}
                 placeholder="••••••••"
@@ -80,14 +86,14 @@ export default function LoginScreen({ navigation }) {
               disabled={loading}
               activeOpacity={0.85}
             >
-              <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign in'}</Text>
+              <Text style={styles.buttonText}>{loading ? t('auth.signingIn') : t('auth.signIn')}</Text>
             </TouchableOpacity>
           </View>
 
           <TouchableOpacity onPress={() => navigation.navigate('Signup')} style={styles.linkBtn}>
             <Text style={styles.linkText}>
-              No account?{'  '}
-              <Text style={styles.linkBold}>Create one</Text>
+              {t('auth.noAccount')}{'  '}
+              <Text style={styles.linkBold}>{t('auth.createOne')}</Text>
             </Text>
           </TouchableOpacity>
 
@@ -104,6 +110,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  langRow: { paddingHorizontal: 24 },
   hero: {
     backgroundColor: Colors.background,
     paddingBottom: 24,

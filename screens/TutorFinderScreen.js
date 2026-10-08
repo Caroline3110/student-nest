@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../constants/Colors';
+import { useT } from '../i18n';
 import useIsAdmin from '../hooks/useIsAdmin';
 import { db } from '../firebase';
 import { collection, addDoc, query, where, onSnapshot } from 'firebase/firestore';
@@ -17,6 +18,7 @@ const SUBJECTS = [
 ];
 
 export default function TutorFinderScreen({ navigation }) {
+  const t = useT();
   const [activeTab, setActiveTab] = useState('find');
   const [tutors, setTutors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +74,7 @@ export default function TutorFinderScreen({ navigation }) {
   // Submit tutor application (status: pending — reviewed manually in Firebase)
   const submitApplication = async () => {
     if (!appForm.name.trim() || !appForm.email.trim() || !appForm.subjects.trim()) {
-      Alert.alert('Missing fields', 'Name, email and subjects are required.');
+      Alert.alert(t('exams.missingFields'), t('tutors.requiredApply'));
       return;
     }
     setAppSubmitting(true);
@@ -94,7 +96,7 @@ export default function TutorFinderScreen({ navigation }) {
       setAppForm({ name: '', email: '', university: '', year: '', subjects: '', rate: '', bio: '', cvLink: '', contact: '' });
     } catch (err) {
       console.error('Application error:', err);
-      Alert.alert('Error', 'Could not submit. Please try again.');
+      Alert.alert(t('common.error'), t('tutors.submitFailed'));
     } finally {
       setAppSubmitting(false);
     }
@@ -103,7 +105,7 @@ export default function TutorFinderScreen({ navigation }) {
   // Admin: add tutor directly (status: approved — appears immediately)
   const adminAddTutor = async () => {
     if (!adminForm.name.trim() || !adminForm.subjects.trim()) {
-      Alert.alert('Missing fields', 'Name and subjects are required.');
+      Alert.alert(t('exams.missingFields'), t('tutors.requiredAdmin'));
       return;
     }
     setAdminSubmitting(true);
@@ -120,11 +122,11 @@ export default function TutorFinderScreen({ navigation }) {
         status: 'approved',
         createdAt: new Date().toISOString(),
       });
-      Alert.alert('Done!', `${adminForm.name} has been added and is now live.`);
+      Alert.alert(t('tutors.done'), t('tutors.addedLive', { name: adminForm.name }));
       setAdminForm({ name: '', email: '', university: '', year: '', subjects: '', rate: '', bio: '', contact: '' });
     } catch (err) {
       console.error('Admin add error:', err);
-      Alert.alert('Error', 'Could not add tutor. Please try again.');
+      Alert.alert(t('common.error'), t('tutors.addFailed'));
     } finally {
       setAdminSubmitting(false);
     }
@@ -144,7 +146,7 @@ export default function TutorFinderScreen({ navigation }) {
 
   const openLink = (url) => {
     Linking.openURL(url).catch(() =>
-      Alert.alert('Could not open', 'No app is available to handle this contact method.'));
+      Alert.alert(t('tutors.couldNotOpen'), t('tutors.noApp')));
   };
 
   const contactTutor = (tutor) => {
@@ -157,12 +159,12 @@ export default function TutorFinderScreen({ navigation }) {
     }
     if (tutor.email) {
       options.push({
-        text: 'Email',
+        text: t('auth.email'),
         onPress: () => openLink(`mailto:${tutor.email.trim()}?subject=${encodeURIComponent('Tutoring enquiry via Student Nest')}`),
       });
     }
-    options.push({ text: 'Cancel', style: 'cancel' });
-    Alert.alert(`Contact ${tutor.name}`, 'How would you like to reach them?', options);
+    options.push({ text: t('common.cancel'), style: 'cancel' });
+    Alert.alert(t('tutors.contactName', { name: tutor.name }), t('tutors.howReach'), options);
   };
 
   const initials = (name) =>
@@ -175,12 +177,12 @@ export default function TutorFinderScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← {t('common.back')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleTitleTap} activeOpacity={1}>
-          <Text style={styles.headerTitle}>Tutor Finder</Text>
+          <Text style={styles.headerTitle}>{t('home.features.tutors.name')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerSub}>{tutors.length} tutor{tutors.length !== 1 ? 's' : ''} available</Text>
+        <Text style={styles.headerSub}>{t(tutors.length === 1 ? 'tutors.oneAvailable' : 'tutors.nAvailable', { count: tutors.length })}</Text>
       </View>
 
       {/* Tabs */}
@@ -192,7 +194,7 @@ export default function TutorFinderScreen({ navigation }) {
             onPress={() => setActiveTab(tab)}
           >
             <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-              {tab === 'find' ? 'Find a Tutor' : 'Become a Tutor'}
+              {tab === 'find' ? t('tutors.findTab') : t('tutors.applyTab')}
             </Text>
           </TouchableOpacity>
         ))}
@@ -205,7 +207,7 @@ export default function TutorFinderScreen({ navigation }) {
           {/* Search */}
           <TextInput
             style={styles.searchBar}
-            placeholder="Search by name, subject or university..."
+            placeholder={t('tutors.searchPlaceholder')}
             placeholderTextColor={Colors.textMuted}
             value={search}
             onChangeText={setSearch}
@@ -219,7 +221,7 @@ export default function TutorFinderScreen({ navigation }) {
                 style={[styles.chip, subject === s && styles.chipActive]}
                 onPress={() => setSubject(s)}
               >
-                <Text style={[styles.chipText, subject === s && styles.chipTextActive]}>{s}</Text>
+                <Text style={[styles.chipText, subject === s && styles.chipTextActive]}>{t(`tutors.subjects.${s}`)}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -229,11 +231,11 @@ export default function TutorFinderScreen({ navigation }) {
             <ActivityIndicator color={Colors.primary} style={styles.loader} />
           ) : filtered.length === 0 ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No tutors found</Text>
+              <Text style={styles.emptyTitle}>{t('tutors.noneFound')}</Text>
               <Text style={styles.emptySub}>
                 {tutors.length === 0
-                  ? 'No tutors have been added yet. Check back soon!'
-                  : 'Try a different search or subject filter.'}
+                  ? t('tutors.noneYet')
+                  : t('tutors.tryDifferent')}
               </Text>
             </View>
           ) : (
@@ -248,7 +250,7 @@ export default function TutorFinderScreen({ navigation }) {
                     {tutor.university ? (
                       <Text style={styles.tutorUni}>{tutor.university}{tutor.year ? ` · ${tutor.year}` : ''}</Text>
                     ) : null}
-                    <Text style={styles.tutorRate}>£{tutor.rate}/hr</Text>
+                    <Text style={styles.tutorRate}>£{tutor.rate}{t('tutors.perHour')}</Text>
                   </View>
                 </View>
 
@@ -269,7 +271,7 @@ export default function TutorFinderScreen({ navigation }) {
                 ) : null}
 
                 <TouchableOpacity style={styles.contactBtn} onPress={() => contactTutor(tutor)} activeOpacity={0.8}>
-                  <Text style={styles.contactBtnText}>Contact {tutor.name.split(' ')[0]}</Text>
+                  <Text style={styles.contactBtnText}>{t('tutors.contactName', { name: tutor.name.split(' ')[0] })}</Text>
                 </TouchableOpacity>
               </View>
             ))
@@ -287,30 +289,30 @@ export default function TutorFinderScreen({ navigation }) {
                 <View style={styles.successCircle}>
                   <Text style={styles.successIcon}>✓</Text>
                 </View>
-                <Text style={styles.successTitle}>Application submitted!</Text>
+                <Text style={styles.successTitle}>{t('tutors.submitted')}</Text>
                 <Text style={styles.successSub}>
-                  We'll review your details and get back to you by email. This usually takes 2–3 days.
+                  {t('tutors.submittedSub')}
                 </Text>
                 <TouchableOpacity style={styles.successBtn} onPress={() => setAppDone(false)}>
-                  <Text style={styles.successBtnText}>Submit another</Text>
+                  <Text style={styles.successBtnText}>{t('tutors.submitAnother')}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <>
                 <Text style={styles.applyIntro}>
-                  Fill in your details below. We'll review your application and get back to you by email. Approved tutors are listed on Student Nest immediately.
+                  {t('tutors.applyIntro')}
                 </Text>
 
                 {[
-                  { label: 'Full name *', key: 'name', placeholder: 'e.g. Sarah Johnson' },
-                  { label: 'Email address *', key: 'email', placeholder: 'your@email.com', keyboard: 'email-address' },
-                  { label: 'University', key: 'university', placeholder: 'e.g. UCL, King\'s College London' },
-                  { label: 'Year of study', key: 'year', placeholder: 'e.g. 3rd year, Postgraduate' },
-                  { label: 'Subjects you teach *', key: 'subjects', placeholder: 'e.g. Maths, Physics, Statistics' },
-                  { label: 'Hourly rate (£)', key: 'rate', placeholder: 'e.g. 20', keyboard: 'decimal-pad' },
-                  { label: 'Short bio', key: 'bio', placeholder: 'Tell students about yourself and your teaching style...', multi: true },
-                  { label: 'CV or LinkedIn link', key: 'cvLink', placeholder: 'https://linkedin.com/in/yourprofile' },
-                  { label: 'Contact (WhatsApp or email)', key: 'contact', placeholder: '+44 7700 900000' },
+                  { label: `${t('profile.name')} *`, key: 'name', placeholder: t('profile.namePlaceholder') },
+                  { label: `${t('auth.email')} *`, key: 'email', placeholder: 'your@email.com', keyboard: 'email-address' },
+                  { label: t('profile.university'), key: 'university', placeholder: t('profile.universityPlaceholder') },
+                  { label: t('profile.year'), key: 'year', placeholder: t('tutors.yearPlaceholder') },
+                  { label: `${t('tutors.subjectsTeach')} *`, key: 'subjects', placeholder: t('tutors.subjectsPlaceholder') },
+                  { label: t('tutors.rate'), key: 'rate', placeholder: '20', keyboard: 'decimal-pad' },
+                  { label: t('tutors.bio'), key: 'bio', placeholder: t('tutors.bioPlaceholder'), multi: true },
+                  { label: t('tutors.cvLink'), key: 'cvLink', placeholder: 'https://linkedin.com/in/yourprofile' },
+                  { label: t('tutors.contact'), key: 'contact', placeholder: '+44 7700 900000' },
                 ].map(f => (
                   <View key={f.key} style={styles.field}>
                     <Text style={styles.fieldLabel}>{f.label}</Text>
@@ -336,7 +338,7 @@ export default function TutorFinderScreen({ navigation }) {
                 >
                   {appSubmitting
                     ? <ActivityIndicator color={Colors.white} />
-                    : <Text style={styles.submitBtnText}>Submit application</Text>}
+                    : <Text style={styles.submitBtnText}>{t('tutors.submit')}</Text>}
                 </TouchableOpacity>
                 <View style={{ height: 40 }} />
               </>
@@ -349,26 +351,26 @@ export default function TutorFinderScreen({ navigation }) {
       <Modal visible={adminVisible} animationType="slide" onRequestClose={() => setAdminVisible(false)}>
         <SafeAreaView style={styles.adminScreen}>
           <View style={styles.adminHeader}>
-            <Text style={styles.adminTitle}>Add Tutor</Text>
+            <Text style={styles.adminTitle}>{t('tutors.addTutor')}</Text>
             <TouchableOpacity onPress={() => setAdminVisible(false)}>
-              <Text style={styles.adminClose}>Done</Text>
+              <Text style={styles.adminClose}>{t('tutors.done')}</Text>
             </TouchableOpacity>
           </View>
           <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
               <Text style={styles.adminNote}>
-                Tutors added here are approved instantly and appear live on the app.
+                {t('tutors.adminNote')}
               </Text>
 
               {[
-                { label: 'Full name *', key: 'name', placeholder: 'e.g. Sarah Johnson' },
-                { label: 'Email', key: 'email', placeholder: 'tutor@email.com', keyboard: 'email-address' },
-                { label: 'University', key: 'university', placeholder: 'e.g. UCL' },
-                { label: 'Year / Level', key: 'year', placeholder: 'e.g. 3rd year, PhD' },
-                { label: 'Subjects *', key: 'subjects', placeholder: 'e.g. Maths, Physics (comma-separated)' },
-                { label: 'Hourly rate (£)', key: 'rate', placeholder: 'e.g. 25', keyboard: 'decimal-pad' },
-                { label: 'Bio', key: 'bio', placeholder: 'Short description...', multi: true },
-                { label: 'Contact (WhatsApp or email)', key: 'contact', placeholder: '+44 7700 900000' },
+                { label: `${t('profile.name')} *`, key: 'name', placeholder: t('profile.namePlaceholder') },
+                { label: t('auth.email'), key: 'email', placeholder: 'tutor@email.com', keyboard: 'email-address' },
+                { label: t('profile.university'), key: 'university', placeholder: 'UCL' },
+                { label: t('profile.year'), key: 'year', placeholder: t('tutors.yearPlaceholder') },
+                { label: `${t('tutors.subjectsTeach')} *`, key: 'subjects', placeholder: t('tutors.subjectsPlaceholder') },
+                { label: t('tutors.rate'), key: 'rate', placeholder: '25', keyboard: 'decimal-pad' },
+                { label: t('tutors.bio'), key: 'bio', placeholder: t('tutors.bioPlaceholder'), multi: true },
+                { label: t('tutors.contact'), key: 'contact', placeholder: '+44 7700 900000' },
               ].map(f => (
                 <View key={f.key} style={styles.field}>
                   <Text style={styles.fieldLabel}>{f.label}</Text>
@@ -394,7 +396,7 @@ export default function TutorFinderScreen({ navigation }) {
               >
                 {adminSubmitting
                   ? <ActivityIndicator color={Colors.white} />
-                  : <Text style={styles.submitBtnText}>Add tutor</Text>}
+                  : <Text style={styles.submitBtnText}>{t('tutors.addTutor')}</Text>}
               </TouchableOpacity>
               <View style={{ height: 40 }} />
             </ScrollView>

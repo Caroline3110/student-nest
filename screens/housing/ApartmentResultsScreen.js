@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useT } from '../../i18n';
 import { apartmentListings } from '../../data/housingData';
 
 export default function ApartmentResultsScreen({ navigation, route }) {
+  const t = useT();
   const { searchParams } = route.params;
   const [results, setResults] = useState([]);
   const [sortBy, setSortBy] = useState('price');
@@ -25,20 +27,20 @@ export default function ApartmentResultsScreen({ navigation, route }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Results</Text>
-        <Text style={styles.headerSubtitle}>{results.length} apartments found</Text>
+        <Text style={styles.headerTitle}>{t('housing.results')}</Text>
+        <Text style={styles.headerSubtitle}>{t('housing.apartmentsFound', { count: results.length })}</Text>
       </View>
 
       <View style={styles.metaBar}>
         <Text style={styles.metaText}>
-          {searchParams.location} · {searchParams.bedrooms} bed · £{searchParams.priceMin || '0'}–£{searchParams.priceMax || 'any'}/week
+          {searchParams.location} · {t('housing.nBed', { count: searchParams.bedrooms })} · £{searchParams.priceMin || '0'}–{searchParams.priceMax ? `£${searchParams.priceMax}` : t('housing.any')}{t('housing.perWeek')}
         </Text>
       </View>
 
       <View style={styles.sortBar}>
-        <Text style={styles.sortLabel}>Sort:</Text>
+        <Text style={styles.sortLabel}>{t('housing.sort')}</Text>
         {['price', 'size'].map(s => (
           <TouchableOpacity
             key={s}
@@ -46,7 +48,7 @@ export default function ApartmentResultsScreen({ navigation, route }) {
             onPress={() => setSortBy(s)}
           >
             <Text style={[styles.sortBtnText, sortBy === s && styles.sortBtnTextActive]}>
-              {s.charAt(0).toUpperCase() + s.slice(1)}
+              {t(`housing.sortBy.${s}`)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -56,10 +58,10 @@ export default function ApartmentResultsScreen({ navigation, route }) {
         <View style={styles.list}>
           {results.length === 0 ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No apartments found</Text>
-              <Text style={styles.emptyDesc}>Try adjusting your search filters</Text>
+              <Text style={styles.emptyTitle}>{t('housing.noneFound')}</Text>
+              <Text style={styles.emptyDesc}>{t('housing.adjustFilters')}</Text>
               <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.goBack()}>
-                <Text style={styles.emptyBtnText}>← Modify search</Text>
+                <Text style={styles.emptyBtnText}>← {t('housing.modifySearch')}</Text>
               </TouchableOpacity>
             </View>
           ) : results.map(apt => (
@@ -67,7 +69,7 @@ export default function ApartmentResultsScreen({ navigation, route }) {
               key={apt.id}
               style={styles.card}
               activeOpacity={0.7}
-              onPress={() => Alert.alert(apt.title, `${apt.address}\n£${apt.price}/week · ${apt.size}\nAvailable: ${apt.available}\n\n${apt.description}`)}
+              onPress={() => Alert.alert(apt.title, `${apt.address}\n£${apt.price}${t('housing.perWeek')} · ${apt.size}\n${t('housing.available')}: ${apt.available}\n\n${apt.description}`)}
             >
               <View style={styles.cardTop}>
                 <View style={styles.cardIcon}>
@@ -79,14 +81,14 @@ export default function ApartmentResultsScreen({ navigation, route }) {
                 </View>
                 <View style={styles.priceBadge}>
                   <Text style={styles.priceBig}>£{apt.price}</Text>
-                  <Text style={styles.priceSm}>/week</Text>
+                  <Text style={styles.priceSm}>{t('housing.perWeek')}</Text>
                 </View>
               </View>
 
               <View style={styles.statsStrip}>
                 {[
-                  { label: `${apt.bedrooms} bed` },
-                  { label: `${apt.bathrooms} bath` },
+                  { label: t('housing.nBed', { count: apt.bedrooms }) },
+                  { label: t('housing.nBath', { count: apt.bathrooms }) },
                   { label: apt.size },
                   { label: apt.available },
                 ].map((s, i) => (

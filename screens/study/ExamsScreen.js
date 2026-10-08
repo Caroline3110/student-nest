@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useLanguage } from '../../i18n';
 import { db, auth } from '../../firebase';
 import { 
   collection, 
@@ -22,6 +23,7 @@ import { getDaysUntil } from './examUtils';
 
 
 export default function ExamsScreen({ navigation }) {
+  const { t, lang } = useLanguage();
   const [exams, setExams] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newExam, setNewExam] = useState({
@@ -64,8 +66,8 @@ export default function ExamsScreen({ navigation }) {
       if (reminderDate > new Date()) {
         await Notifications.scheduleNotificationAsync({
           content: { 
-            title: `${exam.subject} exam tomorrow!`, 
-            body: `Exam at ${exam.time}. Get studying!` 
+            title: t('exams.reminderTitle', { subject: exam.subject }), 
+            body: t('exams.reminderBody', { time: exam.time }) 
           },
           trigger: { 
             type: 'date',
@@ -81,7 +83,7 @@ export default function ExamsScreen({ navigation }) {
 
   const addExam = async () => {
     if (!newExam.subject.trim() || !newExam.date) {
-      Alert.alert('Missing fields', 'Please fill in subject and date'); 
+      Alert.alert(t('exams.missingFields'), t('exams.fillSubjectDate')); 
       return;
     }
 
@@ -106,15 +108,15 @@ export default function ExamsScreen({ navigation }) {
       console.log('Exam added to Firebase');
     } catch (error) {
       console.error('Error adding exam:', error);
-      Alert.alert('Error', 'Could not save exam');
+      Alert.alert(t('common.error'), t('exams.saveFailed'));
     }
   };
 
   const deleteExam = (id) => {
-    Alert.alert('Delete exam', 'Remove this exam?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('exams.deleteTitle'), t('exams.deleteConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       { 
-        text: 'Delete', 
+        text: t('common.delete'), 
         style: 'destructive', 
         onPress: async () => {
           try {
@@ -123,7 +125,7 @@ export default function ExamsScreen({ navigation }) {
             console.log('Exam deleted');
           } catch (error) {
             console.error('Error deleting exam:', error);
-            Alert.alert('Error', 'Could not delete exam');
+            Alert.alert(t('common.error'), t('exams.deleteFailed'));
           }
         }
       },
@@ -147,7 +149,7 @@ export default function ExamsScreen({ navigation }) {
     }
   };
 
-  const formatDate = (d) => new Date(d).toLocaleDateString('en-GB', {
+  const formatDate = (d) => new Date(d).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-GB', {
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
   });
 
@@ -170,9 +172,9 @@ export default function ExamsScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Exams</Text>
+        <Text style={styles.headerTitle}>{t('study.exams')}</Text>
         <Text style={styles.headerSubtitle}>{exams.length} scheduled</Text>
       </View>
 
@@ -180,8 +182,8 @@ export default function ExamsScreen({ navigation }) {
         contentContainerStyle={styles.scrollContent}>
         {sorted.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No exams yet</Text>
-            <Text style={styles.emptyText}>Tap + to add an exam</Text>
+            <Text style={styles.emptyTitle}>{t('exams.emptyTitle')}</Text>
+            <Text style={styles.emptyText}>{t('exams.emptyText')}</Text>
           </View>
         ) : sorted.map((exam) => {
           const days = getDaysUntil(exam.date);
@@ -199,13 +201,13 @@ export default function ExamsScreen({ navigation }) {
                 </View>
                 <View style={[styles.badge, { backgroundColor: badge.bg }]}>
                   {days < 0 ? (
-                    <Text style={[styles.badgeText, { color: badge.text }]}>Past</Text>
+                    <Text style={[styles.badgeText, { color: badge.text }]}>{t('exams.past')}</Text>
                   ) : days === 0 ? (
-                    <Text style={[styles.badgeText, { color: badge.text }]}>Today</Text>
+                    <Text style={[styles.badgeText, { color: badge.text }]}>{t('exams.today')}</Text>
                   ) : (
                     <>
                       <Text style={[styles.badgeNum, { color: badge.text }]}>{days}</Text>
-                      <Text style={[styles.badgeSub, { color: badge.text }]}>days</Text>
+                      <Text style={[styles.badgeSub, { color: badge.text }]}>{t('exams.days')}</Text>
                     </>
                   )}
                 </View>
@@ -215,14 +217,14 @@ export default function ExamsScreen({ navigation }) {
 
               <View style={styles.progressSection}>
                 <View style={styles.progressRow}>
-                  <Text style={styles.progressLabel}>Study progress</Text>
+                  <Text style={styles.progressLabel}>{t('study.progress')}</Text>
                   <Text style={styles.progressStats}>{exam.hoursCompleted}/{exam.hoursNeeded}h · {pct}%</Text>
                 </View>
                 <View style={styles.track}>
                   <View style={[styles.fill, { width: `${Math.min(pct, 100)}%`, backgroundColor: progressColor(pct) }]} />
                 </View>
                 {remaining > 0 && days > 0 && (
-                  <Text style={styles.rateHint}>{Math.ceil(remaining / days)}h/day to finish on time</Text>
+                  <Text style={styles.rateHint}>{t('exams.perDay', { hours: Math.ceil(remaining / days) })}</Text>
                 )}
               </View>
 
@@ -234,7 +236,7 @@ export default function ExamsScreen({ navigation }) {
                   <Text style={styles.hoursBtnText}>+ 2h</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteExam(exam.id)}>
-                  <Text style={styles.deleteBtnText}>Delete</Text>
+                  <Text style={styles.deleteBtnText}>{t('common.delete')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -252,13 +254,13 @@ export default function ExamsScreen({ navigation }) {
           <ScrollView contentContainerStyle={{ justifyContent: 'flex-end' }}>
             <View style={styles.sheet}>
               <View style={styles.sheetHandle} />
-              <Text style={styles.sheetTitle}>Add exam</Text>
+              <Text style={styles.sheetTitle}>{t('exams.add')}</Text>
               {[
-                { label: 'Subject *', key: 'subject', placeholder: 'e.g. Operating Systems' },
-                { label: 'Date *', key: 'date', placeholder: 'YYYY-MM-DD' },
-                { label: 'Time', key: 'time', placeholder: '09:00' },
-                { label: 'Location', key: 'location', placeholder: 'e.g. Main Hall A' },
-                { label: 'Study hours needed', key: 'hoursNeeded', placeholder: '15', keyboard: 'number-pad' },
+                { label: `${t('exams.subject')} *`, key: 'subject', placeholder: t('exams.subjectPlaceholder') },
+                { label: `${t('exams.date')} *`, key: 'date', placeholder: 'YYYY-MM-DD' },
+                { label: t('exams.time'), key: 'time', placeholder: '09:00' },
+                { label: t('exams.location'), key: 'location', placeholder: t('exams.locationPlaceholder') },
+                { label: t('exams.hoursNeeded'), key: 'hoursNeeded', placeholder: '15', keyboard: 'number-pad' },
               ].map(f => (
                 <View key={f.key} style={styles.fieldWrap}>
                   <Text style={styles.fieldLabel}>{f.label}</Text>
@@ -274,10 +276,10 @@ export default function ExamsScreen({ navigation }) {
               ))}
               <View style={styles.sheetBtns}>
                 <TouchableOpacity style={styles.cancelBtn} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <Text style={styles.cancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.confirmBtn} onPress={addExam}>
-                  <Text style={styles.confirmText}>Add exam</Text>
+                  <Text style={styles.confirmText}>{t('exams.add')}</Text>
                 </TouchableOpacity>
               </View>
             </View>

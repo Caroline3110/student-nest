@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useLanguage } from '../../i18n';
 import { db, auth } from '../../firebase';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 
 const WEEKLY_GOAL = 30;
 
 export default function StudyDashboardScreen({ navigation }) {
+  const { t, lang } = useLanguage();
   const [tasks, setTasks] = useState([]);
   const [exams, setExams] = useState([]);
 
@@ -46,14 +48,14 @@ export default function StudyDashboardScreen({ navigation }) {
   const studiedHours = exams.reduce((sum, e) => sum + (e.hoursCompleted || 0), 0);
   const weekPct = Math.min(Math.round((studiedHours / WEEKLY_GOAL) * 100), 100);
 
-  const formatDate = (d) => new Date(d).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+  const formatDate = (d) => new Date(d).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-GB', { month: 'short', day: 'numeric' });
   const getDaysUntil = (d) => Math.ceil((new Date(d) - new Date()) / 86400000);
 
   const quickActions = [
-    { label: 'Timetable', screen: 'Timetable' },
-    { label: 'Exams', screen: 'Exams' },
-    { label: 'To-do', screen: 'Todo' },
-    { label: 'Focus', screen: 'Pomodoro' },
+    { label: t('study.timetable'), screen: 'Timetable' },
+    { label: t('study.exams'), screen: 'Exams' },
+    { label: t('study.todo'), screen: 'Todo' },
+    { label: t('study.focus'), screen: 'Pomodoro' },
   ];
 
   const priorityColor = (p) =>
@@ -63,16 +65,16 @@ export default function StudyDashboardScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Study planner</Text>
-        <Text style={styles.headerSubtitle}>Track your academic progress</Text>
+        <Text style={styles.headerTitle}>{t('study.title')}</Text>
+        <Text style={styles.headerSubtitle}>{t('study.subtitle')}</Text>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
         {/* Quick actions */}
-        <Text style={styles.sectionLabel}>Quick access</Text>
+        <Text style={styles.sectionLabel}>{t('study.quickAccess')}</Text>
         <View style={styles.quickGrid}>
           {quickActions.map(a => (
             <TouchableOpacity
@@ -87,7 +89,7 @@ export default function StudyDashboardScreen({ navigation }) {
         </View>
 
         {/* Weekly study hours */}
-        <Text style={styles.sectionLabel}>Study progress</Text>
+        <Text style={styles.sectionLabel}>{t('study.progress')}</Text>
         <View style={styles.goalCard}>
           <View style={styles.goalRow}>
             <View>
@@ -95,36 +97,36 @@ export default function StudyDashboardScreen({ navigation }) {
                 {studiedHours}
                 <Text style={styles.goalTotal}> / {WEEKLY_GOAL}h</Text>
               </Text>
-              <Text style={styles.goalSub}>Total study hours logged</Text>
+              <Text style={styles.goalSub}>{t('study.hoursLogged')}</Text>
             </View>
             <View style={styles.examsBadge}>
               <Text style={styles.examsNum}>{exams.length}</Text>
-              <Text style={styles.examsLabel}>exams</Text>
+              <Text style={styles.examsLabel}>{t('study.examsCount')}</Text>
             </View>
           </View>
           <View style={styles.track}>
             <View style={[styles.fill, { width: `${weekPct}%` }]} />
           </View>
           <View style={styles.goalFooter}>
-            <Text style={styles.goalPct}>{weekPct}% of goal</Text>
+            <Text style={styles.goalPct}>{t('study.pctOfGoal', { pct: weekPct })}</Text>
             <Text style={styles.goalLeft}>
-              {studiedHours >= WEEKLY_GOAL ? 'Goal reached' : `${WEEKLY_GOAL - studiedHours}h to go`}
+              {studiedHours >= WEEKLY_GOAL ? t('study.goalReached') : t('study.hoursToGo', { hours: WEEKLY_GOAL - studiedHours })}
             </Text>
           </View>
         </View>
 
         {/* Today's tasks */}
         <View style={styles.sectionRow}>
-          <Text style={styles.sectionLabel}>Active tasks</Text>
+          <Text style={styles.sectionLabel}>{t('study.activeTasks')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Todo')}>
-            <Text style={styles.viewAll}>View all</Text>
+            <Text style={styles.viewAll}>{t('study.viewAll')}</Text>
           </TouchableOpacity>
         </View>
 
         {todaysTasks.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>
-              {tasks.length === 0 ? 'No tasks yet — add one in To-do' : 'All tasks complete!'}
+              {tasks.length === 0 ? t('study.noTasks') : t('study.allTasksDone')}
             </Text>
           </View>
         ) : todaysTasks.map(task => (
@@ -132,7 +134,7 @@ export default function StudyDashboardScreen({ navigation }) {
             <View style={styles.checkbox} />
             <View style={styles.taskContent}>
               <Text style={styles.taskTitle}>{task.title}</Text>
-              <Text style={styles.taskMeta}>{task.category} · {task.priority} priority</Text>
+              <Text style={styles.taskMeta}>{t(`study.categories.${task.category}`)} · {t(`study.priorities.${task.priority}`)}</Text>
             </View>
             <View style={[styles.priorityDot, { backgroundColor: priorityColor(task.priority) }]} />
           </TouchableOpacity>
@@ -140,16 +142,16 @@ export default function StudyDashboardScreen({ navigation }) {
 
         {/* Upcoming exams */}
         <View style={styles.sectionRow}>
-          <Text style={styles.sectionLabel}>Upcoming exams</Text>
+          <Text style={styles.sectionLabel}>{t('study.upcomingExams')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Exams')}>
-            <Text style={styles.viewAll}>View all</Text>
+            <Text style={styles.viewAll}>{t('study.viewAll')}</Text>
           </TouchableOpacity>
         </View>
 
         {upcomingExams.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>
-              {exams.length === 0 ? 'No exams yet — add one in Exams' : 'No exams in the next 30 days'}
+              {exams.length === 0 ? t('study.noExams') : t('study.noExamsSoon')}
             </Text>
           </View>
         ) : upcomingExams.map(exam => {
@@ -163,13 +165,13 @@ export default function StudyDashboardScreen({ navigation }) {
                   <Text style={styles.examDate}>{formatDate(exam.date)} · {exam.time}</Text>
                 </View>
                 <View style={[styles.daysBadge, days <= 3 && styles.daysBadgeUrgent]}>
-                  <Text style={[styles.daysText, days <= 3 && styles.daysTextUrgent]}>{days}d</Text>
+                  <Text style={[styles.daysText, days <= 3 && styles.daysTextUrgent]}>{t('study.daysShort', { count: days })}</Text>
                 </View>
               </View>
               <View style={styles.track}>
                 <View style={[styles.fill, { width: `${Math.min(pct, 100)}%`, backgroundColor: Colors.success }]} />
               </View>
-              <Text style={styles.examProgress}>{exam.hoursCompleted || 0}/{exam.hoursNeeded}h studied</Text>
+              <Text style={styles.examProgress}>{t('study.hoursStudied', { done: exam.hoursCompleted || 0, total: exam.hoursNeeded })}</Text>
             </TouchableOpacity>
           );
         })}

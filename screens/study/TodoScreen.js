@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useLanguage } from '../../i18n';
 import { db, auth } from '../../firebase';
 import { 
   collection, 
@@ -23,6 +24,7 @@ import {
 } from 'firebase/firestore';
 
 export default function TodoScreen({ navigation }) {
+  const { t, lang } = useLanguage();
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState('all'); // all, study, personal
   const [modalVisible, setModalVisible] = useState(false);
@@ -77,12 +79,12 @@ export default function TodoScreen({ navigation }) {
 
   const deleteTask = (taskId) => {
     Alert.alert(
-      'Delete Task',
-      'Are you sure you want to delete this task?',
+      t('todo.deleteTitle'),
+      t('todo.deleteConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -91,7 +93,7 @@ export default function TodoScreen({ navigation }) {
               console.log('Task deleted');
             } catch (error) {
               console.error('Error deleting task:', error);
-              Alert.alert('Error', 'Could not delete task');
+              Alert.alert(t('common.error'), t('todo.deleteFailed'));
             }
           }
         }
@@ -101,7 +103,7 @@ export default function TodoScreen({ navigation }) {
 
   const addTask = async () => {
     if (!newTask.title.trim()) {
-      Alert.alert('Error', 'Please enter a task title');
+      Alert.alert(t('common.error'), t('todo.enterTitle'));
       return;
     }
 
@@ -129,7 +131,7 @@ export default function TodoScreen({ navigation }) {
       console.log('Task added to Firebase');
     } catch (error) {
       console.error('Error adding task:', error);
-      Alert.alert('Error', 'Could not save task');
+      Alert.alert(t('common.error'), t('todo.saveFailed'));
     }
   };
 
@@ -146,7 +148,7 @@ export default function TodoScreen({ navigation }) {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = { month: 'short', day: 'numeric' };
-    return date.toLocaleDateString('en-GB', options);
+    return date.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-GB', options);
   };
 
   const isOverdue = (dateString) => {
@@ -164,11 +166,11 @@ export default function TodoScreen({ navigation }) {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>To-Do</Text>
+        <Text style={styles.headerTitle}>{t('study.todo')}</Text>
         <Text style={styles.headerSubtitle}>
-          {activeTasks.length} active · {completedTasks.length} completed
+          {t('todo.summary', { active: activeTasks.length, done: completedTasks.length })}
         </Text>
       </View>
 
@@ -182,7 +184,7 @@ export default function TodoScreen({ navigation }) {
             styles.filterText,
             filter === 'all' && styles.filterTextActive
           ]}>
-            All ({tasks.length})
+            {t('common.all')} ({tasks.length})
           </Text>
         </TouchableOpacity>
 
@@ -194,7 +196,7 @@ export default function TodoScreen({ navigation }) {
             styles.filterText,
             filter === 'study' && styles.filterTextActive
           ]}>
-            Study ({tasks.filter(t => t.category === 'Study').length})
+            {t('study.categories.Study')} ({tasks.filter(task => task.category === 'Study').length})
           </Text>
         </TouchableOpacity>
 
@@ -206,7 +208,7 @@ export default function TodoScreen({ navigation }) {
             styles.filterText,
             filter === 'personal' && styles.filterTextActive
           ]}>
-            Personal ({tasks.filter(t => t.category === 'Personal').length})
+            {t('study.categories.Personal')} ({tasks.filter(task => task.category === 'Personal').length})
           </Text>
         </TouchableOpacity>
       </View>
@@ -215,7 +217,7 @@ export default function TodoScreen({ navigation }) {
         {/* Active Tasks */}
         {activeTasks.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Active Tasks</Text>
+            <Text style={styles.sectionTitle}>{t('study.activeTasks')}</Text>
             {activeTasks.map((task) => (
               <TouchableOpacity
                 key={task.id}
@@ -236,7 +238,7 @@ export default function TodoScreen({ navigation }) {
                       styles.categoryBadge,
                       { backgroundColor: task.category === 'Study' ? Colors.primary : Colors.textMuted }
                     ]}>
-                      <Text style={styles.categoryText}>{task.category}</Text>
+                      <Text style={styles.categoryText}>{t(`study.categories.${task.category}`)}</Text>
                     </View>
                     <Text style={[
                       styles.dueDate,
@@ -269,7 +271,7 @@ export default function TodoScreen({ navigation }) {
         {/* Completed Tasks */}
         {completedTasks.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Completed ✓</Text>
+            <Text style={styles.sectionTitle}>{t('todo.completed')} ✓</Text>
             {completedTasks.map((task) => (
               <TouchableOpacity
                 key={task.id}
@@ -290,7 +292,7 @@ export default function TodoScreen({ navigation }) {
                       styles.categoryBadge,
                       styles.categoryBadgeCompleted
                     ]}>
-                      <Text style={styles.categoryTextCompleted}>{task.category}</Text>
+                      <Text style={styles.categoryTextCompleted}>{t(`study.categories.${task.category}`)}</Text>
                     </View>
                   </View>
                 </View>
@@ -302,8 +304,8 @@ export default function TodoScreen({ navigation }) {
         {filteredTasks.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>✅</Text>
-            <Text style={styles.emptyTitle}>No tasks yet!</Text>
-            <Text style={styles.emptyText}>Tap the + button to add your first task</Text>
+            <Text style={styles.emptyTitle}>{t('todo.emptyTitle')}</Text>
+            <Text style={styles.emptyText}>{t('todo.emptyText')}</Text>
           </View>
         )}
 
@@ -327,17 +329,17 @@ export default function TodoScreen({ navigation }) {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add New Task</Text>
+            <Text style={styles.modalTitle}>{t('todo.addNew')}</Text>
 
             <TextInput
               style={styles.input}
-              placeholder="Task title"
+              placeholder={t('todo.taskTitle')}
               value={newTask.title}
               onChangeText={(text) => setNewTask({ ...newTask, title: text })}
             />
 
             {/* Category */}
-            <Text style={styles.label}>Category</Text>
+            <Text style={styles.label}>{t('todo.category')}</Text>
             <View style={styles.buttonGroup}>
               <TouchableOpacity
                 style={[
@@ -350,7 +352,7 @@ export default function TodoScreen({ navigation }) {
                   styles.optionButtonText,
                   newTask.category === 'Study' && styles.optionButtonTextActive
                 ]}>
-                  Study
+                  {t('study.categories.Study')}
                 </Text>
               </TouchableOpacity>
 
@@ -365,13 +367,13 @@ export default function TodoScreen({ navigation }) {
                   styles.optionButtonText,
                   newTask.category === 'Personal' && styles.optionButtonTextActive
                 ]}>
-                  Personal
+                  {t('study.categories.Personal')}
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Priority */}
-            <Text style={styles.label}>Priority</Text>
+            <Text style={styles.label}>{t('todo.priority')}</Text>
             <View style={styles.buttonGroup}>
               <TouchableOpacity
                 style={[
@@ -384,7 +386,7 @@ export default function TodoScreen({ navigation }) {
                   styles.optionButtonText,
                   newTask.priority === 'high' && styles.optionButtonTextActive
                 ]}>
-                  High
+                  {t('todo.high')}
                 </Text>
               </TouchableOpacity>
 
@@ -399,7 +401,7 @@ export default function TodoScreen({ navigation }) {
                   styles.optionButtonText,
                   newTask.priority === 'medium' && styles.optionButtonTextActive
                 ]}>
-                  Medium
+                  {t('todo.medium')}
                 </Text>
               </TouchableOpacity>
 
@@ -414,13 +416,13 @@ export default function TodoScreen({ navigation }) {
                   styles.optionButtonText,
                   newTask.priority === 'low' && styles.optionButtonTextActive
                 ]}>
-                  Low
+                  {t('todo.low')}
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Due Date */}
-            <Text style={styles.label}>Due Date</Text>
+            <Text style={styles.label}>{t('todo.dueDate')}</Text>
             <TextInput
               style={styles.input}
               placeholder="YYYY-MM-DD"
@@ -434,14 +436,14 @@ export default function TodoScreen({ navigation }) {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.modalButton, styles.addTaskButton]}
                 onPress={addTask}
               >
-                <Text style={styles.addTaskButtonText}>Add Task</Text>
+                <Text style={styles.addTaskButtonText}>{t('todo.addTask')}</Text>
               </TouchableOpacity>
             </View>
           </View>

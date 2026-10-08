@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useT } from '../../i18n';
 import { accommodationProviders, priceFilters } from '../../data/housingData';
 
 export default function AccommodationScreen({ navigation }) {
+  const t = useT();
   const [selectedFilter, setSelectedFilter] = useState(null);
 
   const filteredProviders = selectedFilter
@@ -15,10 +17,10 @@ export default function AccommodationScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Accommodation</Text>
-        <Text style={styles.headerSubtitle}>{filteredProviders.length} providers available</Text>
+        <Text style={styles.headerTitle}>{t('housing.accommodation')}</Text>
+        <Text style={styles.headerSubtitle}>{t('housing.providersAvailable', { count: filteredProviders.length })}</Text>
       </View>
 
       <View style={styles.filterBar}>
@@ -27,7 +29,7 @@ export default function AccommodationScreen({ navigation }) {
             style={[styles.chip, !selectedFilter && styles.chipActive]}
             onPress={() => setSelectedFilter(null)}
           >
-            <Text style={[styles.chipText, !selectedFilter && styles.chipTextActive]}>All</Text>
+            <Text style={[styles.chipText, !selectedFilter && styles.chipTextActive]}>{t('common.all')}</Text>
           </TouchableOpacity>
           {priceFilters.map(f => (
             <TouchableOpacity
@@ -35,7 +37,7 @@ export default function AccommodationScreen({ navigation }) {
               style={[styles.chip, selectedFilter?.id === f.id && styles.chipActive]}
               onPress={() => setSelectedFilter(f)}
             >
-              <Text style={[styles.chipText, selectedFilter?.id === f.id && styles.chipTextActive]}>{f.label}</Text>
+              <Text style={[styles.chipText, selectedFilter?.id === f.id && styles.chipTextActive]}>{t(`housing.priceFilters.${f.id}`)}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -60,7 +62,7 @@ export default function AccommodationScreen({ navigation }) {
                 </View>
                 {provider.billsIncluded && (
                   <View style={styles.billsBadge}>
-                    <Text style={styles.billsBadgeText}>Bills incl.</Text>
+                    <Text style={styles.billsBadgeText}>{t('housing.billsIncl')}</Text>
                   </View>
                 )}
               </View>
@@ -68,7 +70,7 @@ export default function AccommodationScreen({ navigation }) {
               <View style={styles.cardBody}>
                 <View style={styles.ratingRow}>
                   <Text style={styles.ratingStars}>{'★'.repeat(Math.floor(provider.rating))}</Text>
-                  <Text style={styles.ratingText}>{provider.rating} · {provider.totalReviews} reviews</Text>
+                  <Text style={styles.ratingText}>{provider.rating} · {t('housing.reviews', { count: provider.totalReviews })}</Text>
                 </View>
                 <Text style={styles.desc} numberOfLines={2}>{provider.description}</Text>
                 <View style={styles.tags}>
@@ -82,7 +84,7 @@ export default function AccommodationScreen({ navigation }) {
                 <Text style={styles.uniText} numberOfLines={1}>
                   {provider.nearbyUniversities.join(' · ')}
                 </Text>
-                <Text style={styles.viewLink}>View →</Text>
+                <Text style={styles.viewLink}>{t('housing.view')} →</Text>
               </View>
             </TouchableOpacity>
           ))}

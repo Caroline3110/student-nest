@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import * as Notifications from 'expo-notifications';
+import { LanguageProvider, useLanguage } from './i18n';
+import { ProfileProvider, useProfile } from './hooks/useProfile';
 // Import screens
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
@@ -25,6 +27,9 @@ import RoommateFinderScreen from './screens/RoommateFinderScreen';
 import HousekeeperScreen from './screens/HousekeeperScreen';
 import PartTimeJobsScreen from './screens/PartTimeJobsScreen';
 import MindNestScreen from './screens/MindNestScreen';
+import ProfileSetupScreen from './screens/ProfileSetupScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import EditProfileScreen from './screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -54,43 +59,65 @@ export default function App() {
   requestPermissions();
 }, []);
 
-  if (showSplash) {
-    return <SplashScreen onFinish={() => setShowSplash(false)} />;
-    }
-
-  if (loading) {
-    return null;
-  }
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-{user ? (
-  <>
-    <Stack.Screen name="Home" component={HomeScreen} />
-    <Stack.Screen name="StudentLiving" component={StudentLivingScreen} />
-    <Stack.Screen name="Accommodation" component={AccommodationScreen} />
-    <Stack.Screen name="Apartments" component={ApartmentsScreen} />
-    <Stack.Screen name="ProviderDetail" component={ProviderDetailScreen} />
-    <Stack.Screen name="ApartmentResults" component={ApartmentResultsScreen} />
-    <Stack.Screen name="BudgetTracker" component={BudgetBuddyScreen} />
-    <Stack.Screen name="StudyDashboard" component={StudyDashboardScreen} />
-    <Stack.Screen name="Pomodoro" component={PomodoroScreen} />
-    <Stack.Screen name="Todo" component={TodoScreen} />
-    <Stack.Screen name="Exams" component={ExamsScreen} /> 
-    <Stack.Screen name="Timetable" component={TimetableScreen} />
-    <Stack.Screen name="TutorFinder" component={TutorFinderScreen} />
-    <Stack.Screen name="RoommateFinder" component={RoommateFinderScreen} />
-    <Stack.Screen name="Housekeeper" component={HousekeeperScreen} />
-    <Stack.Screen name="PartTimeJobs" component={PartTimeJobsScreen} />
-    <Stack.Screen name="Wellbeing" component={MindNestScreen} />
-  </>
-) : (
-  <>
-    <Stack.Screen name="Login" component={LoginScreen} />
-    <Stack.Screen name="Signup" component={SignupScreen} />
-  </>
-)}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <LanguageProvider>
+      {showSplash ? (
+        <SplashScreen onFinish={() => setShowSplash(false)} />
+      ) : loading ? null : (
+        <ProfileProvider uid={user?.uid}>
+          <NavigationContainer>
+            <AppStack signedIn={!!user} />
+          </NavigationContainer>
+        </ProfileProvider>
+      )}
+    </LanguageProvider>
+  );
+}
+
+function AppStack({ signedIn }) {
+  const profile = useProfile();
+  const { lang, setLang } = useLanguage();
+
+  // Use the language saved on the profile when signing in on a new device.
+  useEffect(() => {
+    if (profile?.language && profile.language !== lang) setLang(profile.language);
+  }, [profile?.language]);
+
+  // Wait for the profile so new users don't see Home flash before setup.
+  if (signedIn && profile === undefined) return null;
+
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {!signedIn ? (
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Signup" component={SignupScreen} />
+        </>
+      ) : !profile?.profileComplete ? (
+        <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
+      ) : (
+        <>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+          <Stack.Screen name="StudentLiving" component={StudentLivingScreen} />
+          <Stack.Screen name="Accommodation" component={AccommodationScreen} />
+          <Stack.Screen name="Apartments" component={ApartmentsScreen} />
+          <Stack.Screen name="ProviderDetail" component={ProviderDetailScreen} />
+          <Stack.Screen name="ApartmentResults" component={ApartmentResultsScreen} />
+          <Stack.Screen name="BudgetTracker" component={BudgetBuddyScreen} />
+          <Stack.Screen name="StudyDashboard" component={StudyDashboardScreen} />
+          <Stack.Screen name="Pomodoro" component={PomodoroScreen} />
+          <Stack.Screen name="Todo" component={TodoScreen} />
+          <Stack.Screen name="Exams" component={ExamsScreen} />
+          <Stack.Screen name="Timetable" component={TimetableScreen} />
+          <Stack.Screen name="TutorFinder" component={TutorFinderScreen} />
+          <Stack.Screen name="RoommateFinder" component={RoommateFinderScreen} />
+          <Stack.Screen name="Housekeeper" component={HousekeeperScreen} />
+          <Stack.Screen name="PartTimeJobs" component={PartTimeJobsScreen} />
+          <Stack.Screen name="Wellbeing" component={MindNestScreen} />
+        </>
+      )}
+    </Stack.Navigator>
   );
 }

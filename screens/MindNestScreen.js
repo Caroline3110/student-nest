@@ -6,93 +6,62 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../constants/Colors';
+import { useT } from '../i18n';
 
-const MESSAGES = [
-  "Hey, you made it here. That counts. 💛",
-  "No pressure today. Just check in with yourself.",
-  "London is loud. Let's make this space quiet.",
-  "One small reset can change the whole day.",
-  "You're doing better than you think.",
-  "It's okay to not be okay. Start here.",
-];
+// All wording lives in i18n under mindnest.*; these lists only hold ids and emoji.
+const MESSAGE_COUNT = 6;
 
 const MOODS = [
-  { label: 'Overwhelmed', emoji: '😰', bg: Colors.surfaceMuted },
-  { label: 'Lonely',      emoji: '😔', bg: Colors.surfaceMuted },
-  { label: 'Tired',       emoji: '😴', bg: Colors.surfaceMuted },
-  { label: 'Anxious',     emoji: '😟', bg: Colors.surfaceMuted },
-  { label: 'Motivated',   emoji: '💪', bg: Colors.surfaceMuted },
-  { label: 'Numb',        emoji: '😶', bg: Colors.surfaceMuted },
-  { label: 'Stressed',    emoji: '😤', bg: Colors.surfaceMuted },
-  { label: 'Calm',        emoji: '😌', bg: Colors.surfaceMuted },
-  { label: 'Homesick',    emoji: '🏠', bg: Colors.surfaceMuted },
-  { label: 'Burnt out',   emoji: '🔥', bg: Colors.surfaceMuted },
+  { id: 'overwhelmed', emoji: '😰' },
+  { id: 'lonely',      emoji: '😔' },
+  { id: 'tired',       emoji: '😴' },
+  { id: 'anxious',     emoji: '😟' },
+  { id: 'motivated',   emoji: '💪' },
+  { id: 'numb',        emoji: '😶' },
+  { id: 'stressed',    emoji: '😤' },
+  { id: 'calm',        emoji: '😌' },
+  { id: 'homesick',    emoji: '🏠' },
+  { id: 'burntOut',    emoji: '🔥' },
 ];
 
 const CAUSES = [
-  'Uni work', 'Money', 'Friends', 'Family', 'Sleep',
-  'Health', 'Homesickness', 'Job', 'Relationship', 'Future/career', "I don't know",
+  'uni', 'money', 'friends', 'family', 'sleep',
+  'health', 'homesickness', 'job', 'relationship', 'future', 'dontKnow',
 ];
 
-const getResponse = (mood, cause) => {
-  const map = {
-    'Anxious-Uni work':        "Your brain is trying to handle too many tabs at once. That's not a flaw — it's overload. Let's close one tab at a time.",
-    'Anxious-Money':           "Money anxiety sits in your chest all day. You're not failing — you're dealing with something genuinely hard.",
-    'Overwhelmed-Uni work':    "When everything feels urgent, nothing gets done. The goal right now isn't to do everything — it's to do one thing.",
-    'Overwhelmed-Future/career': "Feeling overwhelmed about the future is almost universal for students. The future is built one day at a time.",
-    'Lonely-Friends':          "London can feel isolating even with millions of people around you. You're not the only one feeling this right now.",
-    'Lonely-Homesickness':     "Missing home is one of the most quietly painful feelings. Your roots are still yours — you haven't lost them.",
-    'Homesick-Homesickness':   "Homesickness means you had something worth missing. That's beautiful, even when it hurts.",
-    'Homesick-Family':         "Being far from family is genuinely hard. It doesn't mean you're weak — it means you love them.",
-    'Burnt out-Uni work':      "Burnout isn't weakness — it's what happens when you've been pushing too hard for too long. You deserve real rest.",
-    'Stressed-Uni work':       "Stress before deadlines is normal. Let's figure out what's actually due and what can wait.",
-    'Stressed-Money':          "Financial stress is exhausting because it's always there. Let's find one thing to do about it today.",
-    'Tired-Sleep':             "A tired brain can't think, focus, or feel okay. Sleep isn't lazy — it's the most productive thing you can do right now.",
-    'Tired-Uni work':          "Studying when exhausted is like running with ankle weights. Rest first, then work shorter and smarter.",
-    'Motivated-Uni work':      "That energy is gold. Let's channel it well so it lasts — not burn out in one burst.",
-    'Numb-I don\'t know':      "Sometimes not knowing what we feel is a feeling in itself. You don't need to understand it — just be here.",
-  };
-  return map[`${mood}-${cause}`] ||
-    `Feeling ${mood.toLowerCase()} because of ${cause.toLowerCase()} is completely valid. You don't have to fix everything today — just start with one small, gentle thing.`;
-};
+// Specific responses exist for some mood + cause pairs (mindnest.responses.<mood>_<cause>).
+const RESPONSES = new Set([
+  'anxious_uni', 'anxious_money', 'overwhelmed_uni', 'overwhelmed_future',
+  'lonely_friends', 'lonely_homesickness', 'homesick_homesickness', 'homesick_family',
+  'burntOut_uni', 'stressed_uni', 'stressed_money', 'tired_sleep', 'tired_uni',
+  'motivated_uni', 'numb_dontKnow',
+]);
 
 const HELP_CARDS = [
-  { label: "I feel lonely in London", emoji: "🌆", bg: Colors.surfaceMuted, border: Colors.border,
-    tips: ["Join a uni society — even one session changes things", "Visit your student union for free weekly events", "Try a 'study with strangers' session at a local café", "Your international office runs regular social events", "Volunteering is one of the best ways to meet people in London"] },
-  { label: "I'm stressed about money", emoji: "💸", bg: Colors.surfaceMuted, border: Colors.border,
-    tips: ["Ask your university about the hardship fund — most have one", "Lidl and Aldi cut food bills by up to 40%", "UNiDAYS and TOTUM give student discounts everywhere", "Too Good To Go gets restaurant food for under £3", "Open Budget Buddy in this app for a full money plan"] },
-  { label: "I can't focus", emoji: "🧠", bg: Colors.surfaceMuted, border: Colors.border,
-    tips: ["Change location: library, café, or sit outside", "Phone in another room for just 25 minutes", "Brain dump everything on paper first", "Try lo-fi music or brown noise on YouTube", "Open Study Planner in this app for a Pomodoro session"] },
-  { label: "I'm homesick", emoji: "🏠", bg: Colors.surfaceMuted, border: Colors.border,
-    tips: ["Cook a meal from home — familiar food is deeply comforting", "Find your country's cultural society at your university", "Schedule regular video calls home — consistency helps", "Create a small comfort corner in your room", "Write a letter to someone back home, even if unsent"] },
-  { label: "I feel burnt out", emoji: "🔥", bg: Colors.surfaceMuted, border: Colors.border,
-    tips: ["Burnout needs real rest — not just a short break", "Make a list of what can actually wait until next week", "Sleep before studying — rested brain learns 3× faster", "Talk to your personal tutor or academic advisor", "Your university counselling service is free — use it"] },
+  { id: 'lonely',   emoji: '🌆' },
+  { id: 'money',    emoji: '💸' },
+  { id: 'focus',    emoji: '🧠' },
+  { id: 'homesick', emoji: '🏠' },
+  { id: 'burnout',  emoji: '🔥' },
 ];
 
-const THOUGHTS = [
-  { label: "I'm so behind",            reframe: "Feeling behind usually means your tasks are unclear or too big — not that you're failing.",                           plan: ["Find your ONE most urgent task", "Break it into 20-minute steps", "Ignore everything else until it's done"] },
-  { label: "I'm lazy",                 reframe: "What looks like laziness is almost always exhaustion or lack of clarity. Your brain is protecting itself.",           plan: ["Take a proper 20-min break (guilt-free)", "Write ONE thing to do today", "Start with the easiest task to build momentum"] },
-  { label: "Everyone's doing better",  reframe: "You're comparing your inside to everyone else's outside. No one's Instagram shows the panic and all-nighters.",      plan: ["Close Instagram for 24 hours", "Write 3 things you've done this week, however small", "Check in on a friend — they're probably struggling too"] },
-  { label: "I'm going to fail",        reframe: "That thought is your anxiety talking, not a fact. Most students who feel this way don't fail.",                       plan: ["Write down exactly what's due and when", "Identify the ONE thing that matters most this week", "Email your tutor — asking for help is strength"] },
-  { label: "I can't focus",            reframe: "Unfocused doesn't mean permanently unproductive. It means your brain needs a different condition to work in.",        plan: ["Change your environment (library, café, outside)", "Try 25-minute Pomodoro sprints", "Phone on silent for just one session"] },
-  { label: "I'm not good enough",      reframe: "You got into university. You're still here. That says something real about who you are.",                             plan: ["Name one thing you're genuinely good at", "Talk to a friend or your uni counsellor", "Remember: being here is enough for today"] },
-];
+const THOUGHTS = ['behind', 'lazy', 'comparison', 'fail', 'focus', 'notEnough'];
 
 const GARDEN_ITEMS = ['🌱','🌿','🌸','🌻','🌳','⭐','🕯️','📚','☁️','🦊','🌙','🌺','🍀','🌈','✨','🐝','🦋','🌾','🪴','🌏'];
 const GARDEN_KEY = 'mindnest_garden_count';
 
-const BREATH_PHASES = ['Breathe in...', 'Hold...', 'Breathe out...', 'Rest...'];
 const BREATH_DURATIONS = [4000, 2000, 4000, 2000];
 const BREATH_CYCLES = 4;
 
 const RESET_OPTIONS = [
-  { duration: '~50 sec', label: 'Breathing exercise',   emoji: '🫁', dest: 'breathing' },
-  { duration: '~5 min',  label: 'Mini journal',          emoji: '📓', dest: 'journal'   },
-  { duration: '~10 min', label: 'London calm walk',      emoji: '🚶', dest: 'walk'      },
-  { duration: '~20 min', label: 'Burnout reset plan',    emoji: '🔥', dest: 'translator'},
+  { id: 'breathing', emoji: '🫁', dest: 'breathing' },
+  { id: 'journal',   emoji: '📓', dest: 'journal'   },
+  { id: 'walk',      emoji: '🚶', dest: 'walk'      },
+  { id: 'burnout',   emoji: '🔥', dest: 'translator'},
 ];
 
 export default function MindNestScreen({ navigation }) {
+  const t = useT();
   const [view, setView] = useState('home');
   const [msgIdx, setMsgIdx] = useState(0);
   const [selectedMood, setSelectedMood] = useState(null);
@@ -116,7 +85,7 @@ export default function MindNestScreen({ navigation }) {
 
   useEffect(() => {
     if (view !== 'home') return;
-    const id = setInterval(() => setMsgIdx(i => (i + 1) % MESSAGES.length), 4000);
+    const id = setInterval(() => setMsgIdx(i => (i + 1) % MESSAGE_COUNT), 4000);
     return () => clearInterval(id);
   }, [view]);
 
@@ -181,49 +150,59 @@ export default function MindNestScreen({ navigation }) {
     breathAnim.setValue(1);
   };
 
-  const mood = selectedMood ? MOODS.find(m => m.label === selectedMood) : null;
-  const bgColor = mood?.bg || Colors.background;
+  const mood = selectedMood ? MOODS.find(m => m.id === selectedMood) : null;
+  const bgColor = Colors.background;
+  const moodLabel = (id) => t(`mindnest.moods.${id}`);
+  const causeLabel = (id) => t(`mindnest.causes.${id}`);
+  const getResponse = (moodId, causeId) => {
+    const key = `${moodId}_${causeId}`;
+    if (RESPONSES.has(key)) return t(`mindnest.responses.${key}`);
+    return t('mindnest.responses.fallback', {
+      mood: moodLabel(moodId).toLowerCase(),
+      cause: causeLabel(causeId).toLowerCase(),
+    });
+  };
 
   // ── HOME ────────────────────────────────────────────────
   const renderHome = () => (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.messageCard}>
         <Text style={styles.messageFox}>🦊</Text>
-        <Text style={styles.messageText}>{MESSAGES[msgIdx]}</Text>
+        <Text style={styles.messageText}>{t(`mindnest.messages.${msgIdx}`)}</Text>
       </View>
 
       <View style={styles.gardenCard}>
         <View style={styles.gardenHeader}>
-          <Text style={styles.gardenTitle}>Your MindNest Garden</Text>
-          <Text style={styles.gardenCountText}>{gardenCount} check-in{gardenCount !== 1 ? 's' : ''}</Text>
+          <Text style={styles.gardenTitle}>{t('mindnest.garden')}</Text>
+          <Text style={styles.gardenCountText}>{t(gardenCount === 1 ? 'mindnest.oneCheckin' : 'mindnest.nCheckins', { count: gardenCount })}</Text>
         </View>
         {gardenCount === 0 ? (
-          <Text style={styles.gardenEmpty}>Complete your first check-in to plant your first seed 🌱</Text>
+          <Text style={styles.gardenEmpty}>{t('mindnest.gardenEmpty')} 🌱</Text>
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.gardenRow}>
             {GARDEN_ITEMS.slice(0, Math.min(gardenCount, GARDEN_ITEMS.length)).map((item, i) => (
               <Text key={i} style={styles.gardenItem}>{item}</Text>
             ))}
             {gardenCount > GARDEN_ITEMS.length && (
-              <Text style={styles.gardenMore}>+{gardenCount - GARDEN_ITEMS.length} more</Text>
+              <Text style={styles.gardenMore}>{t('mindnest.more', { count: gardenCount - GARDEN_ITEMS.length })}</Text>
             )}
           </ScrollView>
         )}
       </View>
 
-      <Text style={styles.sectionLabel}>What do you need right now?</Text>
+      <Text style={styles.sectionLabel}>{t('mindnest.needNow')}</Text>
 
       {[
-        { bg: Colors.surfaceMuted, emoji: '💭', title: 'Daily check-in',             sub: 'How are you feeling today?',              dest: 'checkin'    },
-        { bg: Colors.surfaceMuted, emoji: '🔄', title: 'I need a reset',             sub: 'Quick tools to feel better now',          dest: 'reset'      },
-        { bg: Colors.surfaceMuted, emoji: '🌆', title: 'London student help',        sub: 'Lonely, stressed, homesick, burnt out',   dest: 'help'       },
-        { bg: Colors.surfaceMuted, emoji: '🔀', title: 'Study pressure translator',  sub: 'Reframe negative thoughts',               dest: 'translator' },
+        { emoji: '💭', id: 'checkin',    dest: 'checkin'    },
+        { emoji: '🔄', id: 'reset',      dest: 'reset'      },
+        { emoji: '🌆', id: 'help',       dest: 'help'       },
+        { emoji: '🔀', id: 'translator', dest: 'translator' },
       ].map((card, i) => (
-        <TouchableOpacity key={i} style={[styles.mainCard, { backgroundColor: card.bg }]} onPress={() => setView(card.dest)} activeOpacity={0.8}>
+        <TouchableOpacity key={i} style={styles.mainCard} onPress={() => setView(card.dest)} activeOpacity={0.8}>
           <Text style={styles.mainCardEmoji}>{card.emoji}</Text>
           <View style={styles.mainCardText}>
-            <Text style={styles.mainCardTitle}>{card.title}</Text>
-            <Text style={styles.mainCardSub}>{card.sub}</Text>
+            <Text style={styles.mainCardTitle}>{t(`mindnest.menu.${card.id}.title`)}</Text>
+            <Text style={styles.mainCardSub}>{t(`mindnest.menu.${card.id}.sub`)}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
@@ -235,13 +214,13 @@ export default function MindNestScreen({ navigation }) {
   // ── CHECK-IN ─────────────────────────────────────────────
   const renderCheckin = () => (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.viewTitle}>How are you feeling?</Text>
-      <Text style={styles.viewSub}>Tap the one that fits best right now.</Text>
+      <Text style={styles.viewTitle}>{t('mindnest.howFeeling')}</Text>
+      <Text style={styles.viewSub}>{t('mindnest.tapBest')}</Text>
       <View style={styles.moodGrid}>
         {MOODS.map(m => (
-          <TouchableOpacity key={m.label} style={styles.moodPill} onPress={() => { setSelectedMood(m.label); setView('followup'); }} activeOpacity={0.75}>
+          <TouchableOpacity key={m.id} style={styles.moodPill} onPress={() => { setSelectedMood(m.id); setView('followup'); }} activeOpacity={0.75}>
             <Text style={styles.moodEmoji}>{m.emoji}</Text>
-            <Text style={styles.moodLabel}>{m.label}</Text>
+            <Text style={styles.moodLabel}>{moodLabel(m.id)}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -254,13 +233,13 @@ export default function MindNestScreen({ navigation }) {
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.moodConfirm}>
         <Text style={styles.moodConfirmEmoji}>{mood?.emoji}</Text>
-        <Text style={styles.moodConfirmLabel}>{selectedMood}</Text>
+        <Text style={styles.moodConfirmLabel}>{moodLabel(selectedMood)}</Text>
       </View>
-      <Text style={styles.viewTitle}>What's causing it today?</Text>
+      <Text style={styles.viewTitle}>{t('mindnest.causing')}</Text>
       <View style={styles.causeGrid}>
         {CAUSES.map(c => (
           <TouchableOpacity key={c} style={styles.causePill} onPress={() => { setSelectedCause(c); setView('response'); }} activeOpacity={0.75}>
-            <Text style={styles.causePillText}>{c}</Text>
+            <Text style={styles.causePillText}>{causeLabel(c)}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -271,31 +250,31 @@ export default function MindNestScreen({ navigation }) {
   // ── RESPONSE ─────────────────────────────────────────────
   const renderResponse = () => (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      <View style={[styles.responseCard, { backgroundColor: mood?.bg || Colors.surfaceMuted }]}>
+      <View style={[styles.responseCard, { backgroundColor: Colors.surfaceMuted }]}>
         <Text style={styles.responseEmoji}>{mood?.emoji}</Text>
         <Text style={styles.responseText}>{getResponse(selectedMood, selectedCause)}</Text>
       </View>
 
-      <Text style={styles.sectionLabel}>What might help</Text>
+      <Text style={styles.sectionLabel}>{t('mindnest.mightHelp')}</Text>
 
       {[
-        { emoji: '🫁', title: '2-min breathing reset',   sub: 'Calm your nervous system now',          dest: 'breathing'  },
-        { emoji: '📓', title: '5-min mini journal',       sub: 'Put it into words, then let it go',     dest: 'journal'    },
-        { emoji: '🔀', title: 'Reframe the thought',      sub: 'Turn pressure into a 3-step plan',      dest: 'translator' },
-        { emoji: '🌆', title: 'London student help',      sub: 'Resources for your situation',          dest: 'help'       },
+        { emoji: '🫁', id: 'breathing',  dest: 'breathing'  },
+        { emoji: '📓', id: 'journal',    dest: 'journal'    },
+        { emoji: '🔀', id: 'reframe',    dest: 'translator' },
+        { emoji: '🌆', id: 'help',       dest: 'help'       },
       ].map((a, i) => (
         <TouchableOpacity key={i} style={styles.actionCard} onPress={() => setView(a.dest)} activeOpacity={0.8}>
           <Text style={styles.actionEmoji}>{a.emoji}</Text>
           <View style={styles.actionText}>
-            <Text style={styles.actionTitle}>{a.title}</Text>
-            <Text style={styles.actionSub}>{a.sub}</Text>
+            <Text style={styles.actionTitle}>{t(`mindnest.actions.${a.id}.title`)}</Text>
+            <Text style={styles.actionSub}>{t(`mindnest.actions.${a.id}.sub`)}</Text>
           </View>
         </TouchableOpacity>
       ))}
 
       <TouchableOpacity style={styles.gardenBtn} onPress={() => { addToGarden(); goHome(); }} activeOpacity={0.8}>
-        <Text style={styles.gardenBtnTitle}>Add to my garden 🌱</Text>
-        <Text style={styles.gardenBtnSub}>Completing this check-in plants a seed</Text>
+        <Text style={styles.gardenBtnTitle}>{t('mindnest.addToGarden')} 🌱</Text>
+        <Text style={styles.gardenBtnSub}>{t('mindnest.plantsSeed')}</Text>
       </TouchableOpacity>
       <View style={{ height: 40 }} />
     </ScrollView>
@@ -304,14 +283,14 @@ export default function MindNestScreen({ navigation }) {
   // ── RESET MENU ───────────────────────────────────────────
   const renderReset = () => (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.viewTitle}>How much time do you have?</Text>
-      <Text style={styles.viewSub}>Pick a reset that fits your moment.</Text>
+      <Text style={styles.viewTitle}>{t('mindnest.howMuchTime')}</Text>
+      <Text style={styles.viewSub}>{t('mindnest.pickReset')}</Text>
       {RESET_OPTIONS.map((opt, i) => (
         <TouchableOpacity key={i} style={styles.resetCard} onPress={() => setView(opt.dest)} activeOpacity={0.8}>
           <Text style={styles.resetEmoji}>{opt.emoji}</Text>
           <View style={styles.resetMeta}>
-            <Text style={styles.resetLabel}>{opt.label}</Text>
-            <Text style={styles.resetDuration}>{opt.duration}</Text>
+            <Text style={styles.resetLabel}>{t(`mindnest.resets.${opt.id}.label`)}</Text>
+            <Text style={styles.resetDuration}>{t(`mindnest.resets.${opt.id}.duration`)}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
@@ -326,25 +305,25 @@ export default function MindNestScreen({ navigation }) {
       {breathDone ? (
         <View style={styles.doneCard}>
           <Text style={styles.doneEmoji}>✨</Text>
-          <Text style={styles.doneTitle}>Well done.</Text>
-          <Text style={styles.doneSub}>Your nervous system just got a reset. Carry that calm with you.</Text>
+          <Text style={styles.doneTitle}>{t('mindnest.wellDone')}</Text>
+          <Text style={styles.doneSub}>{t('mindnest.wellDoneSub')}</Text>
           <TouchableOpacity style={styles.doneBtn} onPress={() => { addToGarden(); goHome(); }} activeOpacity={0.8}>
-            <Text style={styles.doneBtnText}>Add to my garden 🌱</Text>
+            <Text style={styles.doneBtnText}>{t('mindnest.addToGarden')} 🌱</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <>
-          <Text style={styles.breathTitle}>Breathing exercise</Text>
-          <Text style={styles.breathSub}>{BREATH_CYCLES} cycles · about 50 seconds</Text>
+          <Text style={styles.breathTitle}>{t('mindnest.resets.breathing.label')}</Text>
+          <Text style={styles.breathSub}>{t('mindnest.breathSub', { count: BREATH_CYCLES })}</Text>
           <View style={styles.circleWrap}>
             <Animated.View style={[styles.outerCircle, { transform: [{ scale: breathAnim }] }]} />
             <View style={styles.innerCircle}>
-              <Text style={styles.phaseText}>{isBreathing ? BREATH_PHASES[breathPhase] : 'Ready?'}</Text>
+              <Text style={styles.phaseText}>{isBreathing ? t(`mindnest.breathPhases.${breathPhase}`) : t('mindnest.ready')}</Text>
             </View>
           </View>
           {!isBreathing
-            ? <TouchableOpacity style={styles.startBtn} onPress={startBreathing} activeOpacity={0.8}><Text style={styles.startBtnText}>Start breathing</Text></TouchableOpacity>
-            : <Text style={styles.followText}>Follow the circle</Text>
+            ? <TouchableOpacity style={styles.startBtn} onPress={startBreathing} activeOpacity={0.8}><Text style={styles.startBtnText}>{t('mindnest.startBreathing')}</Text></TouchableOpacity>
+            : <Text style={styles.followText}>{t('mindnest.followCircle')}</Text>
           }
         </>
       )}
@@ -358,22 +337,22 @@ export default function MindNestScreen({ navigation }) {
         {journalDone ? (
           <View style={styles.doneCard}>
             <Text style={styles.doneEmoji}>📓</Text>
-            <Text style={styles.doneTitle}>Written and released.</Text>
-            <Text style={styles.doneSub}>Putting feelings into words is one of the most powerful things you can do for your mind.</Text>
+            <Text style={styles.doneTitle}>{t('mindnest.released')}</Text>
+            <Text style={styles.doneSub}>{t('mindnest.releasedSub')}</Text>
             <TouchableOpacity style={styles.doneBtn} onPress={() => { addToGarden(); goHome(); }} activeOpacity={0.8}>
-              <Text style={styles.doneBtnText}>Add to my garden 🌱</Text>
+              <Text style={styles.doneBtnText}>{t('mindnest.addToGarden')} 🌱</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <>
-            <Text style={styles.viewTitle}>Mini journal</Text>
-            <Text style={styles.viewSub}>Write freely. No one else will see this.</Text>
+            <Text style={styles.viewTitle}>{t('mindnest.resets.journal.label')}</Text>
+            <Text style={styles.viewSub}>{t('mindnest.writeFreely')}</Text>
             <View style={styles.promptCard}>
-              <Text style={styles.promptText}>💭  What's on your mind right now, honestly?</Text>
+              <Text style={styles.promptText}>💭  {t('mindnest.journalPrompt')}</Text>
             </View>
             <TextInput
               style={styles.journalInput}
-              placeholder="Start writing... there's no wrong answer here."
+              placeholder={t('mindnest.journalPlaceholder')}
               placeholderTextColor={Colors.textMuted}
               value={journalText}
               onChangeText={setJournalText}
@@ -381,7 +360,7 @@ export default function MindNestScreen({ navigation }) {
               textAlignVertical="top"
             />
             <TouchableOpacity style={[styles.submitBtn, !journalText.trim() && styles.submitBtnOff]} onPress={() => journalText.trim() && setJournalDone(true)} activeOpacity={0.8}>
-              <Text style={styles.submitBtnText}>I'm done writing</Text>
+              <Text style={styles.submitBtnText}>{t('mindnest.doneWriting')}</Text>
             </TouchableOpacity>
             <View style={{ height: 40 }} />
           </>
@@ -393,18 +372,18 @@ export default function MindNestScreen({ navigation }) {
   // ── LONDON HELP ──────────────────────────────────────────
   const renderHelp = () => (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.viewTitle}>London student help</Text>
-      <Text style={styles.viewSub}>Tap what you're going through.</Text>
+      <Text style={styles.viewTitle}>{t('mindnest.menu.help.title')}</Text>
+      <Text style={styles.viewSub}>{t('mindnest.tapGoingThrough')}</Text>
       {HELP_CARDS.map((card, i) => (
-        <TouchableOpacity key={i} style={[styles.helpCard, { backgroundColor: card.bg, borderColor: card.border }]} onPress={() => setExpandedHelp(expandedHelp === i ? null : i)} activeOpacity={0.8}>
+        <TouchableOpacity key={i} style={styles.helpCard} onPress={() => setExpandedHelp(expandedHelp === i ? null : i)} activeOpacity={0.8}>
           <View style={styles.helpHeader}>
             <Text style={styles.helpEmoji}>{card.emoji}</Text>
-            <Text style={styles.helpLabel}>{card.label}</Text>
+            <Text style={styles.helpLabel}>{t(`mindnest.help.${card.id}.label`)}</Text>
             <Text style={styles.helpChevron}>{expandedHelp === i ? '∧' : '›'}</Text>
           </View>
           {expandedHelp === i && (
             <View style={styles.helpBody}>
-              {card.tips.map((tip, j) => (
+              {t(`mindnest.help.${card.id}.tips`).map((tip, j) => (
                 <View key={j} style={styles.helpTipRow}>
                   <Text style={styles.helpDot}>·</Text>
                   <Text style={styles.helpTip}>{tip}</Text>
@@ -424,29 +403,29 @@ export default function MindNestScreen({ navigation }) {
       {selectedThought ? (
         <>
           <View style={styles.translateCard}>
-            <Text style={styles.translateThought}>"{selectedThought.label}"</Text>
+            <Text style={styles.translateThought}>“{t(`mindnest.thoughts.${selectedThought}.label`)}”</Text>
             <Text style={styles.translateArrow}>↓</Text>
-            <Text style={styles.translateReframe}>{selectedThought.reframe}</Text>
+            <Text style={styles.translateReframe}>{t(`mindnest.thoughts.${selectedThought}.reframe`)}</Text>
           </View>
-          <Text style={styles.sectionLabel}>Your 3-step plan</Text>
-          {selectedThought.plan.map((step, i) => (
+          <Text style={styles.sectionLabel}>{t('mindnest.plan')}</Text>
+          {t(`mindnest.thoughts.${selectedThought}.plan`).map((step, i) => (
             <View key={i} style={styles.planRow}>
               <View style={styles.planNum}><Text style={styles.planNumText}>{i + 1}</Text></View>
               <Text style={styles.planStep}>{step}</Text>
             </View>
           ))}
           <TouchableOpacity style={[styles.submitBtn, { marginTop: 24 }]} onPress={() => setSelectedThought(null)} activeOpacity={0.8}>
-            <Text style={styles.submitBtnText}>Try another thought</Text>
+            <Text style={styles.submitBtnText}>{t('mindnest.anotherThought')}</Text>
           </TouchableOpacity>
         </>
       ) : (
         <>
-          <Text style={styles.viewTitle}>Study pressure translator</Text>
-          <Text style={styles.viewSub}>Tap the thought that's been in your head.</Text>
-          {THOUGHTS.map((t, i) => (
-            <TouchableOpacity key={i} style={styles.thoughtPill} onPress={() => setSelectedThought(t)} activeOpacity={0.8}>
+          <Text style={styles.viewTitle}>{t('mindnest.menu.translator.title')}</Text>
+          <Text style={styles.viewSub}>{t('mindnest.tapThought')}</Text>
+          {THOUGHTS.map((id) => (
+            <TouchableOpacity key={id} style={styles.thoughtPill} onPress={() => setSelectedThought(id)} activeOpacity={0.8}>
               <Text style={styles.thoughtEmoji}>💭</Text>
-              <Text style={styles.thoughtText}>"{t.label}"</Text>
+              <Text style={styles.thoughtText}>“{t(`mindnest.thoughts.${id}.label`)}”</Text>
             </TouchableOpacity>
           ))}
         </>
@@ -458,14 +437,14 @@ export default function MindNestScreen({ navigation }) {
   // ── WALK ────────────────────────────────────────────────
   const renderWalk = () => (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.viewTitle}>10-minute London walk</Text>
-      <Text style={styles.viewSub}>Step outside. Leave your phone in your pocket. Follow this.</Text>
+      <Text style={styles.viewTitle}>{t('mindnest.walkTitle')}</Text>
+      <Text style={styles.viewSub}>{t('mindnest.walkSub')}</Text>
       {[
-        { n: '1', text: "Walk out and turn in any direction. Don't plan it." },
-        { n: '2', text: "First 3 minutes: only notice what you can see — colours, signs, sky." },
-        { n: '3', text: "Next 3 minutes: only notice what you can hear — traffic, birds, voices." },
-        { n: '4', text: "Last 4 minutes: walk slowly and breathe deeper than normal. Feel the ground." },
-        { n: '✓', text: "When you're back, sit for one minute before picking up your phone. That was your reset." },
+        { n: '1', text: t('mindnest.walkSteps.0') },
+        { n: '2', text: t('mindnest.walkSteps.1') },
+        { n: '3', text: t('mindnest.walkSteps.2') },
+        { n: '4', text: t('mindnest.walkSteps.3') },
+        { n: '✓', text: t('mindnest.walkSteps.4') },
       ].map((s, i) => (
         <View key={i} style={styles.walkRow}>
           <View style={[styles.walkNum, s.n === '✓' && styles.walkNumDone]}>
@@ -475,7 +454,7 @@ export default function MindNestScreen({ navigation }) {
         </View>
       ))}
       <TouchableOpacity style={[styles.submitBtn, { marginTop: 24 }]} onPress={() => { addToGarden(); goHome(); }} activeOpacity={0.8}>
-        <Text style={styles.submitBtnText}>I did it — add to garden 🌱</Text>
+        <Text style={styles.submitBtnText}>{t('mindnest.didIt')} 🌱</Text>
       </TouchableOpacity>
       <View style={{ height: 40 }} />
     </ScrollView>
@@ -487,7 +466,7 @@ export default function MindNestScreen({ navigation }) {
     <SafeAreaView style={[styles.container, isHome && { backgroundColor: bgColor }]}>
       <View style={[styles.header, { backgroundColor: isHome ? bgColor : Colors.surface }]}>
         <TouchableOpacity onPress={isHome ? () => navigation.goBack() : goHome} style={styles.backBtn}>
-          <Text style={styles.backText}>{isHome ? '← Back' : '← MindNest'}</Text>
+          <Text style={styles.backText}>{isHome ? `← ${t('common.back')}` : '← MindNest'}</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>MindNest 🦊</Text>
         {gardenCount > 0

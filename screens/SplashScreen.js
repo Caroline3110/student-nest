@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import Colors from '../constants/Colors';
+import { useT } from '../i18n';
 
 export default function SplashScreen({ onFinish }) {
+  const t = useT();
   const opacity = new Animated.Value(0);
   const translateY = new Animated.Value(12);
 
@@ -22,7 +24,7 @@ export default function SplashScreen({ onFinish }) {
           <View style={styles.logoInner} />
         </View>
         <Text style={styles.wordmark}>Student Nest</Text>
-        <Text style={styles.tagline}>Your home away from home</Text>
+        <Text style={styles.tagline}>{t('splash.tagline')}</Text>
       </Animated.View>
     </View>
   );

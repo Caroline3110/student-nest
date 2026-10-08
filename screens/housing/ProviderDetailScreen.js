@@ -2,25 +2,30 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Linking, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useT } from '../../i18n';
 
 export default function ProviderDetailScreen({ navigation, route }) {
+  const t = useT();
   const { provider } = route.params;
   const [saved, setSaved] = useState(false);
 
   const handleWebsite = () => {
-    Linking.openURL(provider.website).catch(() => Alert.alert('Error', 'Could not open website'));
+    Linking.openURL(provider.website).catch(() => Alert.alert(t('common.error'), t('housing.cantOpenWebsite')));
   };
 
   const toggleSave = () => {
     setSaved(!saved);
-    Alert.alert(saved ? 'Removed' : 'Saved', saved ? `${provider.name} removed from favourites` : `${provider.name} saved to your favourites`);
+    Alert.alert(
+      saved ? t('housing.removed') : t('housing.saved'),
+      t(saved ? 'housing.removedFromFav' : 'housing.savedToFav', { name: provider.name }),
+    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
         <View style={styles.heroRow}>
           <View style={styles.heroIcon}>
@@ -36,9 +41,9 @@ export default function ProviderDetailScreen({ navigation, route }) {
         </View>
         <View style={styles.metaRow}>
           <Text style={styles.stars}>{'★'.repeat(Math.floor(provider.rating))}</Text>
-          <Text style={styles.ratingText}>{provider.rating}/5 · {provider.totalReviews} reviews</Text>
+          <Text style={styles.ratingText}>{provider.rating}/5 · {t('housing.reviews', { count: provider.totalReviews })}</Text>
           {provider.billsIncluded && (
-            <View style={styles.billsBadge}><Text style={styles.billsBadgeText}>Bills included</Text></View>
+            <View style={styles.billsBadge}><Text style={styles.billsBadgeText}>{t('housing.billsIncluded')}</Text></View>
           )}
         </View>
       </View>
@@ -46,12 +51,12 @@ export default function ProviderDetailScreen({ navigation, route }) {
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.body}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>About</Text>
+            <Text style={styles.sectionTitle}>{t('housing.about')}</Text>
             <Text style={styles.aboutText}>{provider.description}</Text>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Room types</Text>
+            <Text style={styles.sectionTitle}>{t('housing.roomTypes')}</Text>
             <View style={styles.tagRow}>
               {provider.roomTypes.map((r, i) => (
                 <View key={i} style={styles.roomTag}><Text style={styles.roomTagText}>{r}</Text></View>
@@ -60,7 +65,7 @@ export default function ProviderDetailScreen({ navigation, route }) {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Amenities</Text>
+            <Text style={styles.sectionTitle}>{t('housing.amenities')}</Text>
             <View style={styles.amenityGrid}>
               {provider.amenities.map((a, i) => (
                 <View key={i} style={styles.amenityItem}>
@@ -72,7 +77,7 @@ export default function ProviderDetailScreen({ navigation, route }) {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Locations</Text>
+            <Text style={styles.sectionTitle}>{t('housing.locations')}</Text>
             {provider.locations.map((l, i) => (
               <View key={i} style={[styles.locRow, i < provider.locations.length - 1 && styles.locRowBorder]}>
                 <View style={styles.locDot} />
@@ -82,7 +87,7 @@ export default function ProviderDetailScreen({ navigation, route }) {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Nearby universities</Text>
+            <Text style={styles.sectionTitle}>{t('housing.nearbyUnis')}</Text>
             <View style={styles.tagRow}>
               {provider.nearbyUniversities.map((u, i) => (
                 <View key={i} style={styles.uniTag}><Text style={styles.uniTagText}>{u}</Text></View>
@@ -92,12 +97,12 @@ export default function ProviderDetailScreen({ navigation, route }) {
 
           {provider.tiers && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Available tiers</Text>
+              <Text style={styles.sectionTitle}>{t('housing.tiers')}</Text>
               <View style={styles.tierRow}>
-                {provider.tiers.map((t, i) => (
+                {provider.tiers.map((tier, i) => (
                   <View key={i} style={styles.tierCard}>
-                    <Text style={styles.tierName}>{t}</Text>
-                    <Text style={styles.tierSub}>Tap to explore</Text>
+                    <Text style={styles.tierName}>{tier}</Text>
+                    <Text style={styles.tierSub}>{t('housing.tapExplore')}</Text>
                   </View>
                 ))}
               </View>
@@ -106,10 +111,10 @@ export default function ProviderDetailScreen({ navigation, route }) {
 
           <View style={styles.actions}>
             <TouchableOpacity style={styles.primaryBtn} onPress={handleWebsite} activeOpacity={0.85}>
-              <Text style={styles.primaryBtnText}>Visit website</Text>
+              <Text style={styles.primaryBtnText}>{t('housing.visitWebsite')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.secondaryBtn} onPress={toggleSave} activeOpacity={0.85}>
-              <Text style={styles.secondaryBtnText}>{saved ? '★ Saved' : '☆ Save to favourites'}</Text>
+              <Text style={styles.secondaryBtnText}>{saved ? `★ ${t('housing.saved')}` : `☆ ${t('housing.saveToFav')}`}</Text>
             </TouchableOpacity>
           </View>
         </View>

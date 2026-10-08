@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useT } from '../../i18n';
 import * as DocumentPicker from 'expo-document-picker';
 import ICAL from 'ical.js';
 import { db, auth } from '../../firebase';
@@ -19,6 +20,7 @@ const IMPORT_COLORS = [
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
 export default function TimetableScreen({ navigation }) {
+  const t = useT();
   const [timetable, setTimetable] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [importModalVisible, setImportModalVisible] = useState(false);
@@ -90,7 +92,7 @@ export default function TimetableScreen({ navigation }) {
 
   const addClass = async () => {
     if (!newClass.subject.trim()) {
-      Alert.alert('Missing subject', 'Please enter a subject name'); return;
+      Alert.alert(t('timetable.missingSubject'), t('timetable.enterSubject')); return;
     }
     try {
       const ref = collection(db, 'users', auth.currentUser.uid, 'timetable');
@@ -105,15 +107,15 @@ export default function TimetableScreen({ navigation }) {
       console.log('Class added');
     } catch (error) {
       console.error('Error adding class:', error);
-      Alert.alert('Error', 'Could not save class');
+      Alert.alert(t('common.error'), t('timetable.saveFailed'));
     }
   };
 
   const deleteClass = (id) => {
-    Alert.alert('Delete class', 'Remove this class from your timetable?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('timetable.deleteTitle'), t('timetable.deleteConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -121,7 +123,7 @@ export default function TimetableScreen({ navigation }) {
             console.log('Class deleted');
           } catch (error) {
             console.error('Error deleting class:', error);
-            Alert.alert('Error', 'Could not delete class');
+            Alert.alert(t('common.error'), t('timetable.deleteFailed'));
           }
         },
       },
@@ -136,14 +138,14 @@ export default function TimetableScreen({ navigation }) {
       const icsText = await (await fetch(result.assets[0].uri)).text();
       const comp = new ICAL.Component(ICAL.parse(icsText));
       const vevents = comp.getAllSubcomponents('vevent');
-      if (!vevents.length) { Alert.alert('No events found', 'This .ics file contains no calendar events'); return; }
+      if (!vevents.length) { Alert.alert(t('timetable.noEvents'), t('timetable.noEventsFile')); return; }
       const imported = parseEvents(vevents);
-      if (!imported.length) { Alert.alert('No classes found', 'Could not find any weekday classes in the .ics file'); return; }
+      if (!imported.length) { Alert.alert(t('timetable.noClasses'), t('timetable.noWeekdayClasses')); return; }
       const ref = collection(db, 'users', auth.currentUser.uid, 'timetable');
       await Promise.all(imported.map(cls => addDoc(ref, cls)));
-      Alert.alert('Import successful', `Imported ${imported.length} classes`);
+      Alert.alert(t('timetable.importSuccess'), t('timetable.importedCount', { count: imported.length }));
     } catch {
-      Alert.alert('Import failed', "Could not read the file. Make sure it's a valid .ics calendar file.");
+      Alert.alert(t('timetable.importFailed'), t('timetable.badFile'));
     }
   };
 
@@ -162,27 +164,27 @@ export default function TimetableScreen({ navigation }) {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const icsText = await response.text();
       if (!icsText.trim().startsWith('BEGIN:VCALENDAR')) {
-        Alert.alert('Link not working', 'This link redirected to a login page. Look for a "Subscribe" or "Export" button in your timetable portal and copy that direct link.');
+        Alert.alert(t('timetable.linkNotWorking'), t('timetable.loginRedirect'));
         return;
       }
       const comp = new ICAL.Component(ICAL.parse(icsText));
       const vevents = comp.getAllSubcomponents('vevent');
-      if (!vevents.length) { Alert.alert('No events found', 'This link contains no calendar events'); return; }
+      if (!vevents.length) { Alert.alert(t('timetable.noEvents'), t('timetable.noEventsLink')); return; }
       const imported = parseEvents(vevents);
-      if (!imported.length) { Alert.alert('No classes found', 'Could not find any weekday classes'); return; }
+      if (!imported.length) { Alert.alert(t('timetable.noClasses'), t('timetable.noWeekdayClasses')); return; }
       const ref = collection(db, 'users', auth.currentUser.uid, 'timetable');
       await Promise.all(imported.map(cls => addDoc(ref, cls)));
       setImportModalVisible(false);
       setUrlInput('');
-      Alert.alert('Import successful', `Imported ${imported.length} classes`);
+      Alert.alert(t('timetable.importSuccess'), t('timetable.importedCount', { count: imported.length }));
     } catch (error) {
-      let msg = 'Could not fetch the timetable. ';
-      if (error.name === 'AbortError') msg += 'Request timed out after 30s.';
+      let msg = t('timetable.fetchFailed') + ' ';
+      if (error.name === 'AbortError') msg += t('timetable.timedOut');
       else if (error.message.includes('401') || error.message.includes('403'))
-        msg = 'This link requires login. Look for a "Subscribe" or "Export" option to get a direct .ics link.';
+        msg = t('timetable.requiresLogin');
       else if (error.message.includes('HTTP')) msg += error.message;
-      else msg += 'Check the URL and your internet connection.';
-      Alert.alert('Import failed', msg);
+      else msg += t('timetable.checkUrl');
+      Alert.alert(t('timetable.importFailed'), msg);
     } finally {
       setIsLoading(false);
     }
@@ -197,10 +199,10 @@ export default function TimetableScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Timetable</Text>
-        <Text style={styles.headerSubtitle}>Weekly class schedule</Text>
+        <Text style={styles.headerTitle}>{t('study.timetable')}</Text>
+        <Text style={styles.headerSubtitle}>{t('timetable.subtitle')}</Text>
       </View>
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -211,16 +213,16 @@ export default function TimetableScreen({ navigation }) {
             <View key={day} style={styles.daySection}>
               <View style={styles.dayHeader}>
                 <Text style={[styles.dayName, isToday && styles.dayNameToday]}>
-                  {day}{isToday ? ' · Today' : ''}
+                  {t(`days.${day}`)}{isToday ? ` · ${t('exams.today')}` : ''}
                 </Text>
                 <Text style={[styles.classCount, isToday && styles.classCountToday]}>
-                  {classes.length} {classes.length === 1 ? 'class' : 'classes'}
+                  {t(classes.length === 1 ? 'timetable.oneClass' : 'timetable.nClasses', { count: classes.length })}
                 </Text>
               </View>
 
               {classes.length === 0 ? (
                 <View style={styles.emptyDay}>
-                  <Text style={styles.emptyDayText}>No classes</Text>
+                  <Text style={styles.emptyDayText}>{t('timetable.noClassesDay')}</Text>
                 </View>
               ) : classes.map(item => (
                 <TouchableOpacity
@@ -265,9 +267,9 @@ export default function TimetableScreen({ navigation }) {
         <View style={styles.overlay}>
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Import timetable</Text>
+            <Text style={styles.sheetTitle}>{t('timetable.import')}</Text>
 
-            <Text style={styles.fieldLabel}>Paste timetable link (.ics / webcal)</Text>
+            <Text style={styles.fieldLabel}>{t('timetable.pasteLink')}</Text>
             <TextInput
               style={styles.input}
               placeholder="https://... or webcal://..."
@@ -282,7 +284,7 @@ export default function TimetableScreen({ navigation }) {
             {isLoading && (
               <View style={styles.loadingRow}>
                 <ActivityIndicator size="small" color={Colors.primary} />
-                <Text style={styles.loadingText}>Fetching timetable...</Text>
+                <Text style={styles.loadingText}>{t('timetable.fetching')}</Text>
               </View>
             )}
             <View style={styles.sheetBtns}>
@@ -291,25 +293,25 @@ export default function TimetableScreen({ navigation }) {
                 onPress={() => { setImportModalVisible(false); setUrlInput(''); }}
                 disabled={isLoading}
               >
-                <Text style={styles.cancelText}>Cancel</Text>
+                <Text style={styles.cancelText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.confirmBtn, isLoading && { opacity: 0.5 }]}
                 onPress={importFromURL}
                 disabled={isLoading}
               >
-                <Text style={styles.confirmText}>Import URL</Text>
+                <Text style={styles.confirmText}>{t('timetable.importUrl')}</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or</Text>
+              <Text style={styles.dividerText}>{t('timetable.or')}</Text>
               <View style={styles.dividerLine} />
             </View>
 
             <TouchableOpacity style={styles.fileBtn} onPress={importFromFile} disabled={isLoading}>
-              <Text style={styles.fileBtnText}>Choose .ics file from device</Text>
+              <Text style={styles.fileBtnText}>{t('timetable.chooseFile')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -321,13 +323,13 @@ export default function TimetableScreen({ navigation }) {
           <ScrollView contentContainerStyle={{ justifyContent: 'flex-end' }} showsVerticalScrollIndicator={false}>
             <View style={styles.sheet}>
               <View style={styles.sheetHandle} />
-              <Text style={styles.sheetTitle}>Add class</Text>
+              <Text style={styles.sheetTitle}>{t('timetable.addClass')}</Text>
 
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>Subject *</Text>
+                <Text style={styles.fieldLabel}>{t('exams.subject')} *</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="e.g. Operating Systems"
+                  placeholder={t('exams.subjectPlaceholder')}
                   placeholderTextColor={Colors.textMuted}
                   value={newClass.subject}
                   onChangeText={t => setNewClass({ ...newClass, subject: t })}
@@ -335,7 +337,7 @@ export default function TimetableScreen({ navigation }) {
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>Day</Text>
+                <Text style={styles.fieldLabel}>{t('timetable.day')}</Text>
                 <View style={styles.dayBtns}>
                   {DAYS.map(d => (
                     <TouchableOpacity
@@ -344,7 +346,7 @@ export default function TimetableScreen({ navigation }) {
                       onPress={() => setNewClass({ ...newClass, day: d })}
                     >
                       <Text style={[styles.dayBtnText, newClass.day === d && styles.dayBtnTextActive]}>
-                        {d.slice(0, 3)}
+                        {t(`daysShort.${d}`)}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -353,7 +355,7 @@ export default function TimetableScreen({ navigation }) {
 
               <View style={styles.timeRow}>
                 <View style={styles.timeWrap}>
-                  <Text style={styles.fieldLabel}>Start</Text>
+                  <Text style={styles.fieldLabel}>{t('timetable.start')}</Text>
                   <TextInput
                     style={styles.input}
                     placeholder="09:00"
@@ -363,7 +365,7 @@ export default function TimetableScreen({ navigation }) {
                   />
                 </View>
                 <View style={styles.timeWrap}>
-                  <Text style={styles.fieldLabel}>End</Text>
+                  <Text style={styles.fieldLabel}>{t('timetable.end')}</Text>
                   <TextInput
                     style={styles.input}
                     placeholder="11:00"
@@ -376,20 +378,20 @@ export default function TimetableScreen({ navigation }) {
 
               <View style={styles.timeRow}>
                 <View style={styles.timeWrap}>
-                  <Text style={styles.fieldLabel}>Location</Text>
+                  <Text style={styles.fieldLabel}>{t('exams.location')}</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="Room 3.14"
+                    placeholder={t('timetable.roomPlaceholder')}
                     placeholderTextColor={Colors.textMuted}
                     value={newClass.location}
                     onChangeText={t => setNewClass({ ...newClass, location: t })}
                   />
                 </View>
                 <View style={styles.timeWrap}>
-                  <Text style={styles.fieldLabel}>Lecturer</Text>
+                  <Text style={styles.fieldLabel}>{t('timetable.lecturer')}</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="Dr. Smith"
+                    placeholder={t('timetable.lecturerPlaceholder')}
                     placeholderTextColor={Colors.textMuted}
                     value={newClass.lecturer}
                     onChangeText={t => setNewClass({ ...newClass, lecturer: t })}
@@ -398,7 +400,7 @@ export default function TimetableScreen({ navigation }) {
               </View>
 
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>Colour</Text>
+                <Text style={styles.fieldLabel}>{t('timetable.colour')}</Text>
                 <View style={styles.colorRow}>
                   {IMPORT_COLORS.map(c => (
                     <TouchableOpacity
@@ -416,10 +418,10 @@ export default function TimetableScreen({ navigation }) {
 
               <View style={styles.sheetBtns}>
                 <TouchableOpacity style={styles.cancelBtn} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <Text style={styles.cancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.confirmBtn} onPress={addClass}>
-                  <Text style={styles.confirmText}>Add class</Text>
+                  <Text style={styles.confirmText}>{t('timetable.addClass')}</Text>
                 </TouchableOpacity>
               </View>
             </View>

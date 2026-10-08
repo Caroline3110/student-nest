@@ -5,21 +5,23 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useLanguage } from '../../i18n';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../firebase';
 
 const chat = httpsCallable(functions, 'chat');
 
 const SUGGESTIONS = [
-  { emoji: '🍕', label: 'Cheap restaurants', prompt: 'What are the best and cheapest restaurants for students in the UK? I want to eat out for under £8.' },
-  { emoji: '🛒', label: 'Best supermarkets', prompt: 'Which supermarket is cheapest for students in the UK and what should I buy there?' },
-  { emoji: '🍳', label: 'Budget meal ideas', prompt: 'Give me 5 cheap meal ideas I can cook at home for under £3 per serving.' },
-  { emoji: '💰', label: 'Plan my budget', prompt: 'I have £500 for this month. Help me plan my budget as a student in London.' },
-  { emoji: '💡', label: 'Save more money', prompt: 'What are the best ways for a UK student to save money? Give me specific apps, discounts and tips.' },
-  { emoji: '🍔', label: 'Cheap takeaway', prompt: 'I want a takeaway but I am on a budget. What are my cheapest options and how do I save money on food delivery?' },
+  { key: 'restaurants', emoji: '🍕' },
+  { key: 'supermarkets', emoji: '🛒' },
+  { key: 'meals', emoji: '🍳' },
+  { key: 'plan', emoji: '💰' },
+  { key: 'save', emoji: '💡' },
+  { key: 'takeaway', emoji: '🍔' },
 ];
 
 export default function BudgetBuddyScreen({ navigation }) {
+  const { t, lang } = useLanguage();
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -38,16 +40,17 @@ export default function BudgetBuddyScreen({ navigation }) {
     try {
       const { data } = await chat({
         bot: 'budget',
+        lang,
         messages: next.map(m => ({ role: m.role, content: m.content })),
       });
-      const reply = data?.reply ?? "Sorry, I didn't get a response. Please try again.";
+      const reply = data?.reply ?? t('chat.noResponse');
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: reply }]);
     } catch (error) {
       console.error('Budget Buddy error:', error.message);
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         role: 'assistant',
-        content: "I couldn't connect right now. Please check your internet and try again.",
+        content: error.code === 'functions/resource-exhausted' ? t('chat.busy') : t('chat.connectionError'),
       }]);
     } finally {
       setIsLoading(false);
@@ -69,15 +72,15 @@ export default function BudgetBuddyScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← {t('common.back')}</Text>
         </TouchableOpacity>
         <View style={styles.headerRow}>
           <View style={styles.headerAvatar}>
             <Text style={styles.headerAvatarEmoji}>🤖</Text>
           </View>
           <View>
-            <Text style={styles.headerTitle}>Budget Buddy</Text>
-            <Text style={styles.headerSub}>AI student money assistant</Text>
+            <Text style={styles.headerTitle}>{t('budget.title')}</Text>
+            <Text style={styles.headerSub}>{t('budget.subtitle')}</Text>
           </View>
         </View>
       </View>
@@ -101,9 +104,9 @@ export default function BudgetBuddyScreen({ navigation }) {
               <View style={styles.bigAvatar}>
                 <Text style={styles.bigAvatarEmoji}>🤖</Text>
               </View>
-              <Text style={styles.welcomeTitle}>Hi, I'm Budget Buddy!</Text>
+              <Text style={styles.welcomeTitle}>{t('budget.welcome')}</Text>
               <Text style={styles.welcomeSub}>
-                Ask me anything — cheap restaurants, budget meal ideas, supermarket tips, or help planning your monthly money.
+                {t('budget.welcomeSub')}
               </Text>
 
               {/* Suggestion grid — rows of 2 */}
@@ -113,11 +116,11 @@ export default function BudgetBuddyScreen({ navigation }) {
                     <TouchableOpacity
                       key={i}
                       style={styles.card}
-                      onPress={() => sendMessage(s.prompt)}
+                      onPress={() => sendMessage(t(`budget.suggestions.${s.key}.prompt`))}
                       activeOpacity={0.75}
                     >
                       <Text style={styles.cardEmoji}>{s.emoji}</Text>
-                      <Text style={styles.cardLabel}>{s.label}</Text>
+                      <Text style={styles.cardLabel}>{t(`budget.suggestions.${s.key}.label`)}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -137,7 +140,7 @@ export default function BudgetBuddyScreen({ navigation }) {
                 </View>
               )}
               <View style={[styles.bubble, msg.role === 'user' ? styles.userBubble : styles.aiBubble]}>
-                {msg.role === 'assistant' && <Text style={styles.aiLabel}>Budget Buddy</Text>}
+                {msg.role === 'assistant' && <Text style={styles.aiLabel}>{t('budget.title')}</Text>}
                 <Text style={msg.role === 'user' ? styles.userText : styles.aiText}>
                   {msg.content}
                 </Text>
@@ -153,7 +156,7 @@ export default function BudgetBuddyScreen({ navigation }) {
               </View>
               <View style={[styles.bubble, styles.aiBubble, styles.typingRow]}>
                 <ActivityIndicator size="small" color={Colors.primary} />
-                <Text style={styles.typingText}>Thinking...</Text>
+                <Text style={styles.typingText}>{t('chat.thinking')}</Text>
               </View>
             </View>
           )}
@@ -163,9 +166,9 @@ export default function BudgetBuddyScreen({ navigation }) {
             <View style={styles.chipsWrap}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
                 {SUGGESTIONS.map((s, i) => (
-                  <TouchableOpacity key={i} style={styles.chip} onPress={() => sendMessage(s.prompt)} activeOpacity={0.75}>
+                  <TouchableOpacity key={i} style={styles.chip} onPress={() => sendMessage(t(`budget.suggestions.${s.key}.prompt`))} activeOpacity={0.75}>
                     <Text style={styles.chipEmoji}>{s.emoji}</Text>
-                    <Text style={styles.chipText}>{s.label}</Text>
+                    <Text style={styles.chipText}>{t(`budget.suggestions.${s.key}.label`)}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -178,7 +181,7 @@ export default function BudgetBuddyScreen({ navigation }) {
         <View style={styles.inputBar}>
           <TextInput
             style={styles.input}
-            placeholder="Ask about restaurants, budgets, recipes..."
+            placeholder={t('budget.placeholder')}
             placeholderTextColor={Colors.textMuted}
             value={inputText}
             onChangeText={setInputText}

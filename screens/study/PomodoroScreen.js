@@ -2,13 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { useT } from '../../i18n';
 
 const MODES = {
-  focus: { label: 'Focus', duration: 25 * 60, sub: '25 min session' },
-  break: { label: 'Break', duration: 5 * 60, sub: '5 min break' },
+  focus: { duration: 25 * 60 },
+  break: { duration: 5 * 60 },
 };
 
 export default function PomodoroScreen({ navigation }) {
+  const t = useT();
   const [mode, setMode] = useState('focus');
   const [timeLeft, setTimeLeft] = useState(MODES.focus.duration);
   const [isActive, setIsActive] = useState(false);
@@ -30,12 +32,12 @@ export default function PomodoroScreen({ navigation }) {
     setIsActive(false);
     if (mode === 'focus') {
       setSessions(s => s + 1);
-      Alert.alert('Session complete', 'Take a 5-minute break.', [
-        { text: 'Start break', onPress: () => switchMode('break') },
+      Alert.alert(t('pomodoro.sessionComplete'), t('pomodoro.takeBreak'), [
+        { text: t('pomodoro.startBreak'), onPress: () => switchMode('break') },
       ]);
     } else {
-      Alert.alert('Break over', 'Ready to focus?', [
-        { text: 'Start focus', onPress: () => switchMode('focus') },
+      Alert.alert(t('pomodoro.breakOver'), t('pomodoro.readyToFocus'), [
+        { text: t('pomodoro.startFocus'), onPress: () => switchMode('focus') },
       ]);
     }
   };
@@ -63,10 +65,10 @@ export default function PomodoroScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Focus timer</Text>
-        <Text style={styles.headerSubtitle}>Pomodoro technique</Text>
+        <Text style={styles.headerTitle}>{t('pomodoro.title')}</Text>
+        <Text style={styles.headerSubtitle}>{t('pomodoro.subtitle')}</Text>
       </View>
 
       <View style={styles.content}>
@@ -74,21 +76,21 @@ export default function PomodoroScreen({ navigation }) {
         <View style={styles.statsCard}>
           <View style={styles.statItem}>
             <Text style={styles.statNum}>{sessions}</Text>
-            <Text style={styles.statLabel}>Sessions today</Text>
+            <Text style={styles.statLabel}>{t('pomodoro.sessionsToday')}</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statNum}>{sessions * 25}</Text>
-            <Text style={styles.statLabel}>Minutes focused</Text>
+            <Text style={styles.statLabel}>{t('pomodoro.minutesFocused')}</Text>
           </View>
         </View>
 
         {/* Timer */}
         <View style={styles.timerArea}>
           <View style={styles.timerRing}>
-            <Text style={styles.timerMode}>{MODES[mode].label.toUpperCase()}</Text>
+            <Text style={styles.timerMode}>{t(`pomodoro.modes.${mode}`).toUpperCase()}</Text>
             <Text style={styles.timerDisplay}>{fmt(timeLeft)}</Text>
-            <Text style={styles.timerSub}>{MODES[mode].sub}</Text>
+            <Text style={styles.timerSub}>{t(`pomodoro.subs.${mode}`)}</Text>
           </View>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
@@ -102,10 +104,10 @@ export default function PomodoroScreen({ navigation }) {
             onPress={() => setIsActive(!isActive)}
             activeOpacity={0.85}
           >
-            <Text style={styles.primaryBtnText}>{isActive ? 'Pause' : 'Start'}</Text>
+            <Text style={styles.primaryBtnText}>{isActive ? t('pomodoro.pause') : t('pomodoro.start')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondaryBtn} onPress={reset} activeOpacity={0.7}>
-            <Text style={styles.secondaryBtnText}>Reset</Text>
+            <Text style={styles.secondaryBtnText}>{t('pomodoro.reset')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -118,7 +120,7 @@ export default function PomodoroScreen({ navigation }) {
               onPress={() => handleModePress(key)}
             >
               <Text style={[styles.modeBtnText, mode === key && styles.modeBtnTextActive]}>
-                {val.label} · {val.duration / 60} min
+                {t(`pomodoro.modes.${key}`)} · {t('pomodoro.minutes', { count: val.duration / 60 })}
               </Text>
             </TouchableOpacity>
           ))}
@@ -126,11 +128,11 @@ export default function PomodoroScreen({ navigation }) {
 
         {/* Tips */}
         <View style={styles.tipsCard}>
-          <Text style={styles.tipsTitle}>Tips</Text>
+          <Text style={styles.tipsTitle}>{t('pomodoro.tips')}</Text>
           {[
-            'Remove all distractions before starting',
-            'Focus on one task per session',
-            'Use breaks to rest, not scroll',
+            t('pomodoro.tip1'),
+            t('pomodoro.tip2'),
+            t('pomodoro.tip3'),
           ].map((tip, i) => (
             <View key={i} style={styles.tipRow}>
               <View style={styles.tipDot} />

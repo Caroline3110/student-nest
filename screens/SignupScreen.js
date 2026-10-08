@@ -7,28 +7,31 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import Colors from '../constants/Colors';
+import { useT } from '../i18n';
+import { LanguageToggle } from '../components/FormField';
 
 export default function SignupScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const t = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
-    if (!email || !password || !confirmPassword) { Alert.alert('Error', 'Please fill in all fields'); return; }
-    if (password !== confirmPassword) { Alert.alert('Error', 'Passwords do not match'); return; }
-    if (password.length < 6) { Alert.alert('Error', 'Password must be at least 6 characters'); return; }
+    if (!email || !password || !confirmPassword) { Alert.alert(t('common.error'), t('common.fillAllFields')); return; }
+    if (password !== confirmPassword) { Alert.alert(t('common.error'), t('auth.passwordsDontMatch')); return; }
+    if (password.length < 6) { Alert.alert(t('common.error'), t('auth.passwordTooShort')); return; }
     setLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
     } catch (error) {
       setLoading(false);
-      let msg = 'Signup failed. Please try again.';
-      if (error.code === 'auth/email-already-in-use') msg = 'This email is already registered';
-      else if (error.code === 'auth/invalid-email') msg = 'Invalid email address';
-      else if (error.code === 'auth/weak-password') msg = 'Password is too weak';
-      Alert.alert('Signup failed', msg);
+      let msg = t('auth.signupFailedGeneric');
+      if (error.code === 'auth/email-already-in-use') msg = t('auth.emailInUse');
+      else if (error.code === 'auth/invalid-email') msg = t('auth.invalidEmail');
+      else if (error.code === 'auth/weak-password') msg = t('auth.weakPassword');
+      Alert.alert(t('auth.signupFailed'), msg);
     }
   };
 
@@ -39,19 +42,22 @@ export default function SignupScreen({ navigation }) {
     >
       <ScrollView bounces={false} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-        <View style={[styles.hero, { paddingTop: insets.top + 40 }]}>
+        <View style={[styles.langRow, { paddingTop: insets.top + 12 }]}>
+          <LanguageToggle />
+        </View>
+        <View style={[styles.hero, { paddingTop: 24 }]}>
           <Text style={styles.heroEmoji}>🏠</Text>
           <Text style={styles.heroTitle}>Student Nest</Text>
-          <Text style={styles.heroTagline}>Join thousands of students.</Text>
+          <Text style={styles.heroTagline}>{t('auth.joinTagline')}</Text>
         </View>
 
         <View style={styles.formSection}>
-          <Text style={styles.heading}>Create account</Text>
-          <Text style={styles.subheading}>Sign up to get started</Text>
+          <Text style={styles.heading}>{t('auth.createAccount')}</Text>
+          <Text style={styles.subheading}>{t('auth.signUpSub')}</Text>
 
           <View style={styles.form}>
             <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>Email</Text>
+              <Text style={styles.inputLabel}>{t('auth.email')}</Text>
               <TextInput
                 style={styles.input}
                 placeholder="you@example.com"
@@ -65,10 +71,10 @@ export default function SignupScreen({ navigation }) {
             </View>
 
             <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>Password</Text>
+              <Text style={styles.inputLabel}>{t('auth.password')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="At least 6 characters"
+                placeholder={t('auth.passwordHint')}
                 placeholderTextColor={Colors.textMuted}
                 value={password}
                 onChangeText={setPassword}
@@ -77,7 +83,7 @@ export default function SignupScreen({ navigation }) {
             </View>
 
             <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>Confirm password</Text>
+              <Text style={styles.inputLabel}>{t('auth.confirmPassword')}</Text>
               <TextInput
                 style={styles.input}
                 placeholder="••••••••"
@@ -94,14 +100,14 @@ export default function SignupScreen({ navigation }) {
               disabled={loading}
               activeOpacity={0.85}
             >
-              <Text style={styles.buttonText}>{loading ? 'Creating account...' : 'Create account'}</Text>
+              <Text style={styles.buttonText}>{loading ? t('auth.creatingAccount') : t('auth.createAccount')}</Text>
             </TouchableOpacity>
           </View>
 
           <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.linkBtn}>
             <Text style={styles.linkText}>
-              Already have an account?{'  '}
-              <Text style={styles.linkBold}>Sign in</Text>
+              {t('auth.haveAccount')}{'  '}
+              <Text style={styles.linkBold}>{t('auth.signIn')}</Text>
             </Text>
           </TouchableOpacity>
 
@@ -118,6 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  langRow: { paddingHorizontal: 24 },
   hero: {
     backgroundColor: Colors.background,
     paddingBottom: 24,

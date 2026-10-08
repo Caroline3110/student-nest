@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../constants/Colors';
+import { useT } from '../i18n';
 import useIsAdmin from '../hooks/useIsAdmin';
 import { db } from '../firebase';
 import { collection, addDoc, onSnapshot } from 'firebase/firestore';
@@ -16,6 +17,7 @@ const initials = (name) =>
   (name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
 export default function HousekeeperScreen({ navigation }) {
+  const t = useT();
   const [housekeepers, setHousekeepers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -58,7 +60,7 @@ export default function HousekeeperScreen({ navigation }) {
 
   const adminAddHousekeeper = async () => {
     if (!adminForm.name.trim()) {
-      Alert.alert('Missing field', 'Name is required.');
+      Alert.alert(t('roommates.missingField'), t('housekeeper.nameRequired'));
       return;
     }
     setAdminSubmitting(true);
@@ -74,11 +76,11 @@ export default function HousekeeperScreen({ navigation }) {
         contact: adminForm.contact.trim(),
         createdAt: new Date().toISOString(),
       });
-      Alert.alert('Done!', `${adminForm.name} has been added and is now live.`);
+      Alert.alert(t('tutors.done'), t('tutors.addedLive', { name: adminForm.name }));
       setAdminForm({ name: '', area: '', services: '', rate: '', availability: '', experience: '', bio: '', contact: '' });
     } catch (err) {
       console.error('Admin add error:', err);
-      Alert.alert('Error', 'Could not add housekeeper. Please try again.');
+      Alert.alert(t('common.error'), t('housekeeper.addFailed'));
     } finally {
       setAdminSubmitting(false);
     }
@@ -86,7 +88,7 @@ export default function HousekeeperScreen({ navigation }) {
 
   const openLink = (url) => {
     Linking.openURL(url).catch(() =>
-      Alert.alert('Could not open', 'No app is available to handle this contact method.'));
+      Alert.alert(t('tutors.couldNotOpen'), t('tutors.noApp')));
   };
 
   const contactHousekeeper = (h) => {
@@ -96,7 +98,7 @@ export default function HousekeeperScreen({ navigation }) {
       if (contact.includes('@')) {
         const subject = encodeURIComponent('Housekeeper enquiry via Student Nest');
         options.push({
-          text: 'Email',
+          text: t('auth.email'),
           onPress: () => openLink(`mailto:${contact}?subject=${subject}`),
         });
       } else {
@@ -109,8 +111,8 @@ export default function HousekeeperScreen({ navigation }) {
         }
       }
     }
-    options.push({ text: 'Cancel', style: 'cancel' });
-    Alert.alert(`Contact ${h.name}`, 'How would you like to reach them?', options);
+    options.push({ text: t('common.cancel'), style: 'cancel' });
+    Alert.alert(t('tutors.contactName', { name: h.name }), t('tutors.howReach'), options);
   };
 
   const sorted = [...housekeepers]
@@ -133,12 +135,12 @@ export default function HousekeeperScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← {t('common.back')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleTitleTap} activeOpacity={1}>
-          <Text style={styles.headerTitle}>Housekeeper</Text>
+          <Text style={styles.headerTitle}>{t('home.features.housekeeper.name')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerSub}>{housekeepers.length} available near you</Text>
+        <Text style={styles.headerSub}>{t('housekeeper.availableNear', { count: housekeepers.length })}</Text>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -146,7 +148,7 @@ export default function HousekeeperScreen({ navigation }) {
         {/* Search */}
         <TextInput
           style={styles.searchBar}
-          placeholder="Search by name, area or service..."
+          placeholder={t('housekeeper.searchPlaceholder')}
           placeholderTextColor={Colors.textMuted}
           value={search}
           onChangeText={setSearch}
@@ -160,7 +162,7 @@ export default function HousekeeperScreen({ navigation }) {
               style={[styles.chip, sort === opt && styles.chipActive]}
               onPress={() => setSort(opt)}
             >
-              <Text style={[styles.chipText, sort === opt && styles.chipTextActive]}>{opt}</Text>
+              <Text style={[styles.chipText, sort === opt && styles.chipTextActive]}>{t(`housekeeper.sort.${opt}`)}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -169,11 +171,11 @@ export default function HousekeeperScreen({ navigation }) {
           <ActivityIndicator color={Colors.primary} style={styles.loader} />
         ) : sorted.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>No housekeepers found</Text>
+            <Text style={styles.emptyTitle}>{t('housekeeper.noneFound')}</Text>
             <Text style={styles.emptySub}>
               {housekeepers.length === 0
-                ? 'No housekeepers have been added yet. Check back soon!'
-                : 'Try a different search.'}
+                ? t('housekeeper.noneYet')
+                : t('housekeeper.tryDifferent')}
             </Text>
           </View>
         ) : (
@@ -186,11 +188,11 @@ export default function HousekeeperScreen({ navigation }) {
                 <View style={styles.cardMeta}>
                   <Text style={styles.cardName}>{h.name}</Text>
                   {h.area ? <Text style={styles.cardArea}>📍 {h.area}</Text> : null}
-                  {h.experience ? <Text style={styles.cardExp}>{h.experience} experience</Text> : null}
+                  {h.experience ? <Text style={styles.cardExp}>{t('housekeeper.experience', { value: h.experience })}</Text> : null}
                 </View>
                 {h.rate > 0 && (
                   <View style={styles.rateBadge}>
-                    <Text style={styles.rateText}>£{h.rate}/hr</Text>
+                    <Text style={styles.rateText}>£{h.rate}{t('tutors.perHour')}</Text>
                   </View>
                 )}
               </View>
@@ -207,7 +209,7 @@ export default function HousekeeperScreen({ navigation }) {
 
               {h.availability ? (
                 <View style={styles.availRow}>
-                  <Text style={styles.availLabel}>Available: </Text>
+                  <Text style={styles.availLabel}>{t('housing.available')}: </Text>
                   <Text style={styles.availValue}>{h.availability}</Text>
                 </View>
               ) : null}
@@ -217,7 +219,7 @@ export default function HousekeeperScreen({ navigation }) {
               ) : null}
 
               <TouchableOpacity style={styles.contactBtn} onPress={() => contactHousekeeper(h)} activeOpacity={0.8}>
-                <Text style={styles.contactBtnText}>Contact {h.name.split(' ')[0]}</Text>
+                <Text style={styles.contactBtnText}>{t('tutors.contactName', { name: h.name.split(' ')[0] })}</Text>
               </TouchableOpacity>
             </View>
           ))
@@ -229,26 +231,26 @@ export default function HousekeeperScreen({ navigation }) {
       <Modal visible={adminVisible} animationType="slide" onRequestClose={() => setAdminVisible(false)}>
         <SafeAreaView style={styles.adminScreen}>
           <View style={styles.adminHeader}>
-            <Text style={styles.adminTitle}>Add Housekeeper</Text>
+            <Text style={styles.adminTitle}>{t('housekeeper.add')}</Text>
             <TouchableOpacity onPress={() => setAdminVisible(false)}>
-              <Text style={styles.adminClose}>Done</Text>
+              <Text style={styles.adminClose}>{t('tutors.done')}</Text>
             </TouchableOpacity>
           </View>
           <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
               <Text style={styles.adminNote}>
-                Housekeepers added here appear live on the app immediately.
+                {t('housekeeper.adminNote')}
               </Text>
 
               {[
-                { label: 'Full name *', key: 'name', placeholder: 'e.g. Maria Santos' },
-                { label: 'Area / Location', key: 'area', placeholder: 'e.g. East London, Hackney, Brixton' },
-                { label: 'Services (comma-separated)', key: 'services', placeholder: 'e.g. Cleaning, Ironing, Laundry, Cooking' },
-                { label: 'Hourly rate (£)', key: 'rate', placeholder: 'e.g. 15', keyboard: 'decimal-pad' },
-                { label: 'Availability', key: 'availability', placeholder: 'e.g. Mon–Fri 9am–5pm, weekends' },
-                { label: 'Years of experience', key: 'experience', placeholder: 'e.g. 5 years' },
-                { label: 'Bio', key: 'bio', placeholder: 'Short description...', multi: true },
-                { label: 'Contact (WhatsApp number or email)', key: 'contact', placeholder: '+44 7700 900000' },
+                { label: `${t('profile.name')} *`, key: 'name', placeholder: 'Maria Santos' },
+                { label: t('housekeeper.area'), key: 'area', placeholder: 'East London, Hackney, Brixton' },
+                { label: t('housekeeper.services'), key: 'services', placeholder: 'Cleaning, Ironing, Laundry, Cooking' },
+                { label: t('tutors.rate'), key: 'rate', placeholder: '15', keyboard: 'decimal-pad' },
+                { label: t('housekeeper.availability'), key: 'availability', placeholder: 'Mon–Fri 9am–5pm, weekends' },
+                { label: t('housekeeper.yearsExperience'), key: 'experience', placeholder: '5 years' },
+                { label: t('tutors.bio'), key: 'bio', placeholder: t('tutors.bioPlaceholder'), multi: true },
+                { label: t('tutors.contact'), key: 'contact', placeholder: '+44 7700 900000' },
               ].map(f => (
                 <View key={f.key} style={styles.field}>
                   <Text style={styles.fieldLabel}>{f.label}</Text>
@@ -273,7 +275,7 @@ export default function HousekeeperScreen({ navigation }) {
               >
                 {adminSubmitting
                   ? <ActivityIndicator color={Colors.white} />
-                  : <Text style={styles.submitBtnText}>Add housekeeper</Text>}
+                  : <Text style={styles.submitBtnText}>{t('housekeeper.add')}</Text>}
               </TouchableOpacity>
               <View style={{ height: 40 }} />
             </ScrollView>
