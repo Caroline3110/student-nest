@@ -11,7 +11,7 @@ import { useT } from '../i18n';
 import { useProfile } from '../hooks/useProfile';
 
 const FEATURES = [
-  { key: 'living', emoji: '🏠', route: 'StudentLiving' },
+  { key: 'living', emoji: '🏠', route: 'Accommodation' },
   { key: 'budget', emoji: '💰', route: 'BudgetTracker' },
   { key: 'study', emoji: '📚', route: 'StudyDashboard' },
   { key: 'tutors', emoji: '🎓', route: 'TutorFinder' },

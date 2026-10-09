@@ -12,12 +12,9 @@ import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 import HomeScreen from './screens/HomeScreen';
-import StudentLivingScreen from './screens/housing/StudentLivingScreen';
 import AccommodationScreen from './screens/housing/AccommodationScreen';
-import ApartmentsScreen from './screens/housing/ApartmentsScreen';
 import SplashScreen from './screens/SplashScreen';
 import ProviderDetailScreen from './screens/housing/ProviderDetailScreen';
-import ApartmentResultsScreen from './screens/housing/ApartmentResultsScreen';
 import BudgetBuddyScreen from './screens/budget/BudgetBuddyScreen';
 import StudyDashboardScreen from './screens/study/StudyDashboardScreen';
 import PomodoroScreen from './screens/study/PomodoroScreen';
@@ -109,11 +106,8 @@ function AppStack({ signedIn }) {
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
           <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-          <Stack.Screen name="StudentLiving" component={StudentLivingScreen} />
           <Stack.Screen name="Accommodation" component={AccommodationScreen} />
-          <Stack.Screen name="Apartments" component={ApartmentsScreen} />
           <Stack.Screen name="ProviderDetail" component={ProviderDetailScreen} />
-          <Stack.Screen name="ApartmentResults" component={ApartmentResultsScreen} />
           <Stack.Screen name="BudgetTracker" component={BudgetBuddyScreen} />
           <Stack.Screen name="StudyDashboard" component={StudyDashboardScreen} />
           <Stack.Screen name="Pomodoro" component={PomodoroScreen} />
