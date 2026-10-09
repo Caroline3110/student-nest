@@ -589,6 +589,33 @@ export default {
     addFailed: 'Could not add housekeeper. Please try again.',
   },
   mindnest: {
+    crisis: {
+      pill: 'Get help now',
+      title: 'Get help now',
+      sub: "You don't have to handle this alone. These services are free, confidential and there for you.",
+      sections: {
+        danger: 'In danger right now',
+        talk: 'Talk to someone now',
+        abroad: 'Outside the UK?',
+        notUrgent: 'Not urgent, but want support',
+      },
+      lines: {
+        emergency: { name: 'Emergency services', detail: 'If you or someone else is in immediate danger, call 999 or go to A&E.' },
+        samaritans: { name: 'Samaritans', detail: 'Free, 24/7, any age, about anything.' },
+        shout: { name: 'Shout', detail: 'Text SHOUT to 85258. Free, 24/7, for when talking feels too hard.' },
+        nhs111: { name: 'NHS 111 mental health', detail: 'Call 111 and choose option 2 to speak to a mental health professional. 24/7, interpreters available.' },
+        papyrus: { name: 'Papyrus HOPELINE247', detail: 'For under-35s having thoughts of suicide, or anyone worried about someone. 24/7.' },
+        abroadEmergency: { name: 'Local emergency number', detail: '112 works across Europe and in many other countries. UK helplines may not work from abroad.' },
+        findHelpline: { name: 'Find A Helpline', detail: 'Free, confidential helplines in the country you are in.' },
+        university: { name: 'Your university', detail: 'Your uni\'s wellbeing or student services team can help too. Search "[your uni] student wellbeing".' },
+      },
+      actions: { call: 'Call', text: 'Text', open: 'Open' },
+      cantOpen: "Couldn't open that",
+      contactDirectly: 'You can contact them directly: {{contact}}',
+      heavyCard: "If things feel too heavy right now, you don't have to handle it alone. 💛",
+      heavyCardCta: 'Talk to someone now',
+      disclaimer: 'MindNest is a self-care tool, not a medical or crisis service.',
+    },
     messages: ['Hey, you made it here. That counts. 💛', 'No pressure today. Just check in with yourself.', "London is loud. Let's make this space quiet.", 'One small reset can change the whole day.', "You're doing better than you think.", "It's okay to not be okay. Start here."],
     moods: {
       overwhelmed: 'Overwhelmed',
@@ -716,7 +743,7 @@ export default {
         sub: 'Quick tools to feel better now',
       },
       help: {
-        title: 'London student help',
+        title: 'London student support',
         sub: 'Lonely, stressed, homesick, burnt out',
       },
       translator: {
@@ -738,7 +765,7 @@ export default {
         sub: 'Turn pressure into a 3-step plan',
       },
       help: {
-        title: 'London student help',
+        title: 'London student support',
         sub: 'Resources for your situation',
       },
     },

@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  Animated, TextInput, KeyboardAvoidingView, Platform,
+  Animated, TextInput, KeyboardAvoidingView, Platform, Linking, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../constants/Colors';
 import { useT } from '../i18n';
+import { SUPPORT_SECTIONS, HEAVY_MOODS } from '../data/supportLines';
 
 // All wording lives in i18n under mindnest.*; these lists only hold ids and emoji.
 const MESSAGE_COUNT = 6;
@@ -74,6 +75,10 @@ export default function MindNestScreen({ navigation }) {
   const [breathPhase, setBreathPhase] = useState(0);
   const [isBreathing, setIsBreathing] = useState(false);
   const [breathDone, setBreathDone] = useState(false);
+
+  // Where "Get help now" was opened from, so Back returns there with
+  // nothing lost (e.g. a half-written journal entry).
+  const helpReturnView = useRef('home');
 
   const breathAnim = useRef(new Animated.Value(1)).current;
   const breathTimers = useRef([]);
@@ -150,6 +155,21 @@ export default function MindNestScreen({ navigation }) {
     breathAnim.setValue(1);
   };
 
+  const openHelpNow = () => {
+    helpReturnView.current = view;
+    setView('helpNow');
+  };
+
+  const contactLine = (line) => {
+    let url = line.url;
+    if (line.call) url = `tel:${line.call.replace(/\s/g, '')}`;
+    // iOS and Android expect different separators before a prefilled SMS body.
+    if (line.text) url = `sms:${line.text}${Platform.OS === 'ios' ? '&' : '?'}body=${encodeURIComponent(line.body)}`;
+    const contact = line.call || line.text || line.url;
+    Linking.openURL(url).catch(() =>
+      Alert.alert(t('mindnest.crisis.cantOpen'), t('mindnest.crisis.contactDirectly', { contact })));
+  };
+
   const mood = selectedMood ? MOODS.find(m => m.id === selectedMood) : null;
   const bgColor = Colors.background;
   const moodLabel = (id) => t(`mindnest.moods.${id}`);
@@ -207,6 +227,7 @@ export default function MindNestScreen({ navigation }) {
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
       ))}
+      <Text style={styles.disclaimer}>{t('mindnest.crisis.disclaimer')}</Text>
       <View style={{ height: 32 }} />
     </ScrollView>
   );
@@ -254,6 +275,13 @@ export default function MindNestScreen({ navigation }) {
         <Text style={styles.responseEmoji}>{mood?.emoji}</Text>
         <Text style={styles.responseText}>{getResponse(selectedMood, selectedCause)}</Text>
       </View>
+
+      {HEAVY_MOODS.has(selectedMood) && (
+        <TouchableOpacity style={styles.heavyCard} onPress={openHelpNow} activeOpacity={0.8}>
+          <Text style={styles.heavyCardText}>{t('mindnest.crisis.heavyCard')}</Text>
+          <Text style={styles.heavyCardCta}>{t('mindnest.crisis.heavyCardCta')} ›</Text>
+        </TouchableOpacity>
+      )}
 
       <Text style={styles.sectionLabel}>{t('mindnest.mightHelp')}</Text>
 
@@ -434,6 +462,45 @@ export default function MindNestScreen({ navigation }) {
     </ScrollView>
   );
 
+  // ── GET HELP NOW ─────────────────────────────────────────
+  const renderHelpNow = () => (
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <Text style={styles.viewTitle}>{t('mindnest.crisis.title')}</Text>
+      <Text style={styles.viewSub}>{t('mindnest.crisis.sub')}</Text>
+      {SUPPORT_SECTIONS.map(section => (
+        <View key={section.id} style={styles.crisisSection}>
+          <Text style={styles.sectionLabel}>{t(`mindnest.crisis.sections.${section.id}`)}</Text>
+          {section.lines.map(line => {
+            const action = line.call ? 'call' : line.text ? 'text' : line.url ? 'open' : null;
+            const shown = line.call || line.text || line.url?.replace(/^https?:\/\//, '');
+            return (
+              <View key={line.id} style={[styles.crisisCard, line.urgent && styles.crisisCardUrgent]}>
+                <View style={styles.crisisInfo}>
+                  <Text style={styles.crisisName}>{t(`mindnest.crisis.lines.${line.id}.name`)}</Text>
+                  {shown ? <Text style={styles.crisisNumber} selectable>{shown}</Text> : null}
+                  <Text style={styles.crisisDetail}>{t(`mindnest.crisis.lines.${line.id}.detail`)}</Text>
+                </View>
+                {action && (
+                  <TouchableOpacity
+                    style={[styles.crisisBtn, line.urgent && styles.crisisBtnUrgent]}
+                    onPress={() => contactLine(line)}
+                    activeOpacity={0.8}
+                    accessibilityLabel={`${t(`mindnest.crisis.actions.${action}`)} ${t(`mindnest.crisis.lines.${line.id}.name`)}`}
+                  >
+                    <Text style={[styles.crisisBtnText, line.urgent && styles.crisisBtnTextUrgent]}>
+                      {action === 'call' ? '📞' : action === 'text' ? '💬' : '🔗'} {t(`mindnest.crisis.actions.${action}`)}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            );
+          })}
+        </View>
+      ))}
+      <View style={{ height: 32 }} />
+    </ScrollView>
+  );
+
   // ── WALK ────────────────────────────────────────────────
   const renderWalk = () => (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -461,18 +528,22 @@ export default function MindNestScreen({ navigation }) {
   );
 
   const isHome = view === 'home';
+  const onBack = isHome
+    ? () => navigation.goBack()
+    : view === 'helpNow' ? () => setView(helpReturnView.current) : goHome;
 
   return (
     <SafeAreaView style={[styles.container, isHome && { backgroundColor: bgColor }]}>
       <View style={[styles.header, { backgroundColor: isHome ? bgColor : Colors.surface }]}>
-        <TouchableOpacity onPress={isHome ? () => navigation.goBack() : goHome} style={styles.backBtn}>
+        <TouchableOpacity onPress={onBack} style={styles.backBtn}>
           <Text style={styles.backText}>{isHome ? `← ${t('common.back')}` : '← MindNest'}</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>MindNest 🦊</Text>
-        {gardenCount > 0
-          ? <Text style={styles.headerGarden}>{GARDEN_ITEMS[Math.min(gardenCount - 1, GARDEN_ITEMS.length - 1)]}</Text>
-          : <View style={{ width: 24 }} />
-        }
+        {view !== 'helpNow' && (
+          <TouchableOpacity style={styles.helpPill} onPress={openHelpNow} activeOpacity={0.8} hitSlop={8}>
+            <Text style={styles.helpPillText}>🆘 {t('mindnest.crisis.pill')}</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {view === 'home'       && renderHome()}
@@ -485,6 +556,7 @@ export default function MindNestScreen({ navigation }) {
       {view === 'help'       && renderHelp()}
       {view === 'translator' && renderTranslator()}
       {view === 'walk'       && renderWalk()}
+      {view === 'helpNow'    && renderHelpNow()}
     </SafeAreaView>
   );
 }
@@ -499,7 +571,11 @@ const styles = StyleSheet.create({
   backBtn: { marginRight: 10 },
   backText: { fontSize: 14, color: Colors.textLight, fontWeight: '500' },
   headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-  headerGarden: { fontSize: 22 },
+  helpPill: {
+    backgroundColor: Colors.primaryLight, borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  helpPillText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
 
   scroll: { flex: 1 },
   scrollContent: { padding: 20, paddingBottom: 16 },
@@ -681,6 +757,34 @@ const styles = StyleSheet.create({
   },
   planNumText: { fontSize: 13, fontWeight: '700', color: Colors.white },
   planStep: { flex: 1, fontSize: 14, color: Colors.textPrimary, lineHeight: 22, paddingTop: 3 },
+
+  disclaimer: { fontSize: 11, color: Colors.textMuted, textAlign: 'center', marginTop: 16, lineHeight: 16 },
+
+  heavyCard: {
+    backgroundColor: Colors.playYellow, borderRadius: 14,
+    padding: 16, marginBottom: 24,
+  },
+  heavyCardText: { fontSize: 14, color: Colors.textPrimary, lineHeight: 21, marginBottom: 8 },
+  heavyCardCta: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
+
+  crisisSection: { marginBottom: 12 },
+  crisisCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: Colors.surface, borderRadius: 14,
+    padding: 16, marginBottom: 10, borderWidth: 1, borderColor: Colors.border,
+  },
+  crisisCardUrgent: { backgroundColor: Colors.primaryLight, borderColor: Colors.primaryLight },
+  crisisInfo: { flex: 1 },
+  crisisName: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
+  crisisNumber: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary, marginTop: 2, marginBottom: 4 },
+  crisisDetail: { fontSize: 12, color: Colors.textSecondary, lineHeight: 18 },
+  crisisBtn: {
+    backgroundColor: Colors.surfaceMuted, borderRadius: 12,
+    paddingHorizontal: 14, paddingVertical: 10,
+  },
+  crisisBtnUrgent: { backgroundColor: Colors.primary },
+  crisisBtnText: { fontSize: 13, fontWeight: '700', color: Colors.textPrimary },
+  crisisBtnTextUrgent: { color: Colors.white },
 
   walkRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, marginBottom: 16 },
   walkNum: {

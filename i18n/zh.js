@@ -589,6 +589,33 @@ export default {
     addFailed: '无法添加家政人员，请重试。',
   },
   mindnest: {
+    crisis: {
+      pill: '立即求助',
+      title: '立即求助',
+      sub: '你不必独自面对。以下服务都是免费、保密的，随时为你提供帮助。',
+      sections: {
+        danger: '有紧急危险',
+        talk: '现在就找人聊聊',
+        abroad: '不在英国？',
+        notUrgent: '不紧急，但想获得支持',
+      },
+      lines: {
+        emergency: { name: '紧急服务', detail: '如果你或他人有紧急危险，请拨打 999 或前往急诊室（A&E）。' },
+        samaritans: { name: 'Samaritans', detail: '免费，全天 24 小时，任何年龄、任何话题都可以聊（英语服务）。' },
+        shout: { name: 'Shout', detail: '发送短信 SHOUT 到 85258。免费，全天 24 小时，适合不想通话的时候（英语服务）。' },
+        nhs111: { name: 'NHS 111 心理健康热线', detail: '拨打 111 后按 2，与心理健康专业人员通话。全天 24 小时，可提供口译服务（接通后用英语说 "Mandarin" 或 "Cantonese"）。' },
+        papyrus: { name: 'Papyrus HOPELINE247', detail: '面向有自杀念头的 35 岁以下人士，以及担心他人的任何人。全天 24 小时（英语服务）。' },
+        abroadEmergency: { name: '当地紧急电话', detail: '112 在欧洲及许多其他国家都可以拨打。英国的求助热线在国外可能无法使用。' },
+        findHelpline: { name: 'Find A Helpline', detail: '查找你所在国家的免费、保密求助热线。' },
+        university: { name: '你的大学', detail: '学校的 wellbeing 或学生服务团队也可以帮助你。搜索"[你的大学] student wellbeing"即可找到。' },
+      },
+      actions: { call: '拨打', text: '发短信', open: '打开' },
+      cantOpen: '无法打开',
+      contactDirectly: '你可以直接联系：{{contact}}',
+      heavyCard: '如果现在觉得太沉重，你不必独自承受。💛',
+      heavyCardCta: '现在就找人聊聊',
+      disclaimer: 'MindNest 是自我关怀工具，不是医疗或危机服务。',
+    },
     messages: ['嘿，你来了。这本身就很了不起。💛', '今天没有压力，只是和自己聊聊。', '伦敦太吵了，让这里安静一点吧。', '一个小小的调整，就能改变一整天。', '你做得比你想象的要好。', '不开心也没关系，从这里开始。'],
     moods: {
       overwhelmed: '不知所措',
@@ -716,7 +743,7 @@ export default {
         sub: '马上让自己好受一点的小工具',
       },
       help: {
-        title: '伦敦学生互助',
+        title: '伦敦学生支持',
         sub: '孤独、压力、想家、倦怠',
       },
       translator: {
@@ -738,7 +765,7 @@ export default {
         sub: '把压力变成 3 步计划',
       },
       help: {
-        title: '伦敦学生互助',
+        title: '伦敦学生支持',
         sub: '适合你现在情况的资源',
       },
     },
