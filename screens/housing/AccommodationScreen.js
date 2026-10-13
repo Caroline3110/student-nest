@@ -68,10 +68,6 @@ export default function AccommodationScreen({ navigation }) {
               </View>
 
               <View style={styles.cardBody}>
-                <View style={styles.ratingRow}>
-                  <Text style={styles.ratingStars}>{'★'.repeat(Math.floor(provider.rating))}</Text>
-                  <Text style={styles.ratingText}>{provider.rating} · {t('housing.reviews', { count: provider.totalReviews })}</Text>
-                </View>
                 <Text style={styles.desc} numberOfLines={2}>{provider.description}</Text>
                 <View style={styles.tags}>
                   {provider.amenities.slice(0, 4).map((a, i) => (
@@ -150,9 +146,6 @@ const styles = StyleSheet.create({
   },
   billsBadgeText: { fontSize: 10, fontWeight: '600', color: Colors.textSecondary },
   cardBody: { padding: 12 },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 7 },
-  ratingStars: { fontSize: 11, color: Colors.textPrimary, letterSpacing: 1 },
-  ratingText: { fontSize: 12, color: Colors.textLight },
   desc: { fontSize: 12, color: Colors.textSecondary, lineHeight: 18, marginBottom: 10 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
   tag: { backgroundColor: Colors.background, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },

@@ -39,13 +39,11 @@ export default function ProviderDetailScreen({ navigation, route }) {
             <Text style={styles.favIcon}>{saved ? '★' : '☆'}</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.metaRow}>
-          <Text style={styles.stars}>{'★'.repeat(Math.floor(provider.rating))}</Text>
-          <Text style={styles.ratingText}>{provider.rating}/5 · {t('housing.reviews', { count: provider.totalReviews })}</Text>
-          {provider.billsIncluded && (
+        {provider.billsIncluded && (
+          <View style={styles.metaRow}>
             <View style={styles.billsBadge}><Text style={styles.billsBadgeText}>{t('housing.billsIncluded')}</Text></View>
-          )}
-        </View>
+          </View>
+        )}
       </View>
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -135,7 +133,7 @@ const styles = StyleSheet.create({
   },
   backButton: { marginBottom: 14 },
   backButtonText: { fontSize: 14, color: Colors.textLight, fontWeight: '500' },
-  heroRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   heroIcon: {
     width: 52, height: 52, borderRadius: 14,
     backgroundColor: Colors.primaryLight,
@@ -147,9 +145,7 @@ const styles = StyleSheet.create({
   heroPrice: { fontSize: 13, color: Colors.textLight },
   favBtn: { backgroundColor: Colors.primaryLight, borderRadius: 9, padding: 9 },
   favIcon: { fontSize: 18, color: Colors.primary },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  stars: { fontSize: 12, color: Colors.warning, letterSpacing: 1 },
-  ratingText: { fontSize: 12, color: Colors.textLight },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 12 },
   billsBadge: { backgroundColor: Colors.primaryLight, borderRadius: 5, paddingHorizontal: 9, paddingVertical: 3 },
   billsBadgeText: { fontSize: 10, color: Colors.primary, fontWeight: '600' },
   scroll: { flex: 1 },

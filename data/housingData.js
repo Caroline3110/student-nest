@@ -8,8 +8,6 @@ export const accommodationProviders = [
     priceRange: '£200-£350/week',
     priceMin: 200,
     priceMax: 350,
-    rating: 4.5,
-    totalReviews: 234,
     locations: [
       'Wembley',
       'Mile End',
@@ -31,8 +29,6 @@ export const accommodationProviders = [
     priceRange: '£180-£320/week',
     priceMin: 180,
     priceMax: 320,
-    rating: 4.3,
-    totalReviews: 189,
     locations: [
       'Aldgate',
       'Bloomsbury',
@@ -54,8 +50,6 @@ export const accommodationProviders = [
     priceRange: '£250-£450/week',
     priceMin: 250,
     priceMax: 450,
-    rating: 4.7,
-    totalReviews: 312,
     locations: [
       'Spitalfields',
       'Kings Cross',
@@ -78,8 +72,6 @@ export const accommodationProviders = [
     priceRange: '£190-£300/week',
     priceMin: 190,
     priceMax: 300,
-    rating: 4.2,
-    totalReviews: 145,
     locations: [
       'Stratford',
       'Greenwich',
@@ -100,8 +92,6 @@ export const accommodationProviders = [
     priceRange: '£220-£400/week',
     priceMin: 220,
     priceMax: 400,
-    rating: 4.4,
-    totalReviews: 98,
     locations: [
       'Chelsea',
       'Kensington',
