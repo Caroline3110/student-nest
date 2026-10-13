@@ -21,7 +21,7 @@ export default {
   },
   auth: {
     tagline: 'Your student life, sorted.',
-    joinTagline: 'Join thousands of students.',
+    joinTagline: 'Built by a London student, for London students 💙',
     welcomeBack: 'Welcome back',
     signInSub: 'Sign in to your account',
     email: 'Email',
@@ -64,7 +64,7 @@ export default {
     headlineAccent: 'sorted. ✨',
     sub: 'Study, money, housing & more, all in one nest.',
     haveAccount: 'I already have an account',
-    socialProof: 'Join 1,000+ KCL students 🎓',
+    socialProof: 'Built by a London student, for London students 💙',
     features: {
       study: 'Study',
       budget: 'Budget',

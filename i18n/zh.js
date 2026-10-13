@@ -21,7 +21,7 @@ export default {
   },
   auth: {
     tagline: '让你的学生生活井井有条。',
-    joinTagline: '加入成千上万的同学。',
+    joinTagline: '由伦敦学生打造，专为伦敦学生服务 💙',
     welcomeBack: '欢迎回来',
     signInSub: '登录你的账户',
     email: '邮箱',
@@ -64,7 +64,7 @@ export default {
     headlineAccent: '轻松搞定 ✨',
     sub: '学习、预算、住房等，一个应用全搞定。',
     haveAccount: '我已有账户',
-    socialProof: '已有 1,000+ 名 KCL 同学加入 🎓',
+    socialProof: '由伦敦学生打造，专为伦敦学生服务 💙',
     features: {
       study: '学习',
       budget: '预算',
