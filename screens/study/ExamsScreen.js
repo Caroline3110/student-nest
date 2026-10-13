@@ -183,7 +183,17 @@ export default function ExamsScreen({ navigation }) {
         {sorted.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>{t('exams.emptyTitle')}</Text>
-            <Text style={styles.emptyText}>{t('exams.emptyText')}</Text>
+            <Text style={styles.emptyText}>{t('exams.emptyIntro')}</Text>
+            <View style={styles.benefits}>
+              {t('exams.emptyBenefits').map((benefit, i) => (
+                <Text key={i} style={styles.benefit}>
+                  <Text style={styles.benefitCheck}>✓  </Text>{benefit}
+                </Text>
+              ))}
+            </View>
+            <TouchableOpacity style={styles.emptyBtn} onPress={() => setModalVisible(true)}>
+              <Text style={styles.emptyBtnText}>{t('exams.addFirst')}</Text>
+            </TouchableOpacity>
           </View>
         ) : sorted.map((exam) => {
           const days = getDaysUntil(exam.date);
@@ -306,6 +316,12 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingTop: 72 },
   emptyTitle: { fontSize: 16, fontWeight: '600', color: Colors.textPrimary, marginBottom: 6 },
   emptyText: { fontSize: 13, color: Colors.textLight },
+  // Left-aligned list inside the centred empty state, so the ticks line up.
+  benefits: { alignSelf: 'center', alignItems: 'flex-start', gap: 8, marginTop: 14, marginBottom: 24 },
+  benefit: { fontSize: 14, color: Colors.textSecondary },
+  benefitCheck: { color: Colors.primary, fontWeight: '700' },
+  emptyBtn: { backgroundColor: Colors.primary, borderRadius: 12, paddingVertical: 13, paddingHorizontal: 28 },
+  emptyBtnText: { fontSize: 15, fontWeight: '600', color: Colors.white },
   card: {
     backgroundColor: Colors.surface, borderRadius: 14,
     borderWidth: 1, borderColor: Colors.border,
