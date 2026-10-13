@@ -20,6 +20,7 @@ const CATEGORIES = [
 const SITES = [
   { id: 'indeed', name: 'Indeed UK', url: 'https://uk.indeed.com/jobs?q=student+part+time', categories: ['partTime', 'hospitality'] },
   { id: 'studentjob', name: 'StudentJob UK', url: 'https://www.studentjob.co.uk', categories: ['partTime'] },
+  { id: 'savethestudent', name: 'Save the Student', url: 'https://www.savethestudent.org', categories: ['partTime'] },
   { id: 'totaljobs', name: 'Totaljobs', url: 'https://www.totaljobs.com', categories: ['partTime'] },
   { id: 'gumtree', name: 'Gumtree Jobs', url: 'https://www.gumtree.com/jobs', categories: ['partTime', 'hospitality'] },
   { id: 'caterer', name: 'Caterer.com', url: 'https://www.caterer.com', categories: ['hospitality'] },

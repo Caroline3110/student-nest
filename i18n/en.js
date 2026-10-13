@@ -159,18 +159,11 @@ export default {
     view: 'View',
     available: 'Available',
     cantOpenWebsite: 'Could not open website',
-    removed: 'Removed',
-    saved: 'Saved',
-    removedFromFav: '{{name}} removed from favourites',
-    savedToFav: '{{name}} saved to your favourites',
-    saveToFav: 'Save to favourites',
     about: 'About',
     roomTypes: 'Room types',
     amenities: 'Amenities',
     locations: 'Locations',
     nearbyUnis: 'Nearby universities',
-    tiers: 'Available tiers',
-    tapExplore: 'Tap to explore',
     visitWebsite: 'Visit website',
   },
   chat: {
@@ -213,7 +206,7 @@ export default {
     },
   },
   jobs: {
-    subtitle: 'Trusted job sites for students',
+    subtitle: 'Student-friendly job sites',
     open: 'Open',
     categories: {
       partTime: {
@@ -244,6 +237,7 @@ export default {
     sites: {
       indeed: 'The biggest UK job site — search part-time jobs near you',
       studentjob: 'Jobs aimed specifically at students',
+      savethestudent: 'Student money advice, part-time jobs and freebies',
       totaljobs: 'Large UK job board with lots of part-time roles',
       gumtree: 'Local jobs, often small businesses hiring quickly',
       caterer: 'The UK hospitality job board — cafés, bars, hotels',
@@ -355,8 +349,8 @@ export default {
     deleteTitle: 'Delete exam',
     deleteConfirm: 'Remove this exam?',
     deleteFailed: 'Could not delete exam',
-    emptyTitle: 'No exams yet',
-    emptyText: 'Tap + to add an exam',
+    emptyTitle: 'No exams added yet',
+    emptyText: 'Tap + to add your first exam. Student Nest will send you reminders and help you plan your study time.',
     past: 'Past',
     today: 'Today',
     days: 'days',
@@ -460,7 +454,7 @@ export default {
     couldNotOpen: 'Could not open',
     noApp: 'No app is available to handle this contact method.',
     submitted: 'Application submitted!',
-    submittedSub: "We'll review your details and get back to you by email. This usually takes 2–3 days.",
+    submittedSub: "We'll review your details and get back to you by email.",
     submitAnother: 'Submit another',
     applyIntro: "Fill in your details below. We'll review your application and get back to you by email. Approved tutors are listed on Student Nest immediately.",
     yearPlaceholder: 'e.g. 3rd year, Postgraduate',
@@ -633,7 +627,7 @@ export default {
       },
       money: {
         label: "I'm stressed about money",
-        tips: ['Ask your university about the hardship fund — most have one', 'Lidl and Aldi cut food bills by up to 40%', 'UNiDAYS and TOTUM give student discounts everywhere', 'Too Good To Go gets restaurant food for under £3', 'Open Budget Buddy in this app for a full money plan'],
+        tips: ['Ask your university about the hardship fund — most have one', 'Lidl and Aldi are usually the cheapest supermarkets', 'UNiDAYS and TOTUM give student discounts everywhere', 'Too Good To Go gets restaurant food for under £3', 'Open Budget Buddy in this app for a full money plan'],
       },
       focus: {
         label: "I can't focus",

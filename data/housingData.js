@@ -59,7 +59,6 @@ export const accommodationProviders = [
     description: 'Luxury student living with multiple tier options. From Gold to Diamond, choose your perfect level.',
     amenities: ['Pool', 'Gym', 'Concierge', 'Rooftop Bar', 'Cinema', 'WiFi'],
     roomTypes: ['Gold Studio', 'Platinum Studio', 'Diamond Studio'],
-    tiers: ['Gold', 'Platinum', 'Diamond'],
     website: 'https://chapterliving.com',
     nearbyUniversities: ['Imperial College', 'Kings College', 'UAL'],
     billsIncluded: true,

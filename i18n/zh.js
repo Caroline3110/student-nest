@@ -159,18 +159,11 @@ export default {
     view: '查看',
     available: '可入住',
     cantOpenWebsite: '无法打开网站',
-    removed: '已移除',
-    saved: '已收藏',
-    removedFromFav: '已将 {{name}} 从收藏中移除',
-    savedToFav: '已将 {{name}} 加入收藏',
-    saveToFav: '加入收藏',
     about: '简介',
     roomTypes: '房型',
     amenities: '设施',
     locations: '地点',
     nearbyUnis: '附近大学',
-    tiers: '可选档次',
-    tapExplore: '点击查看',
     visitWebsite: '访问官网',
   },
   chat: {
@@ -213,7 +206,7 @@ export default {
     },
   },
   jobs: {
-    subtitle: '值得信赖的学生求职网站',
+    subtitle: '适合学生的求职网站',
     open: '打开',
     categories: {
       partTime: {
@@ -244,6 +237,7 @@ export default {
     sites: {
       indeed: '英国最大的求职网站 — 搜索你附近的兼职',
       studentjob: '专门面向学生的工作',
+      savethestudent: '学生理财建议、兼职和免费福利',
       totaljobs: '英国大型招聘网站，兼职岗位很多',
       gumtree: '本地工作，多为急招的小商家',
       caterer: '英国餐饮酒店业招聘网站 — 咖啡店、酒吧、酒店',
@@ -355,8 +349,8 @@ export default {
     deleteTitle: '删除考试',
     deleteConfirm: '确定删除这场考试吗？',
     deleteFailed: '无法删除考试',
-    emptyTitle: '还没有考试',
-    emptyText: '点击 + 添加考试',
+    emptyTitle: '还没有添加考试',
+    emptyText: '点击 + 添加你的第一场考试。Student Nest 会提醒你，并帮你规划复习时间。',
     past: '已结束',
     today: '今天',
     days: '天',
@@ -460,7 +454,7 @@ export default {
     couldNotOpen: '无法打开',
     noApp: '没有可以使用此联系方式的应用。',
     submitted: '申请已提交！',
-    submittedSub: '我们会审核你的信息并通过邮件回复你，通常需要 2–3 天。',
+    submittedSub: '我们会审核你的信息并通过邮件回复你。',
     submitAnother: '再提交一个',
     applyIntro: '请在下方填写你的信息。我们会审核你的申请并通过邮件回复。通过审核的导师会立即在 Student Nest 上展示。',
     yearPlaceholder: '例如：大三、研究生',
@@ -633,7 +627,7 @@ export default {
       },
       money: {
         label: '我在为钱发愁',
-        tips: ['问问学校有没有困难补助基金 — 大多数学校都有', '在 Lidl 和 Aldi 买菜，伙食费最多能省 40%', 'UNiDAYS 和 TOTUM 几乎到处都有学生折扣', '用 Too Good To Go，不到 £3 就能买到餐厅的食物', '打开本应用里的预算助手，制定完整的理财计划'],
+        tips: ['问问学校有没有困难补助基金 — 大多数学校都有', 'Lidl 和 Aldi 通常是最便宜的超市', 'UNiDAYS 和 TOTUM 几乎到处都有学生折扣', '用 Too Good To Go，不到 £3 就能买到餐厅的食物', '打开本应用里的预算助手，制定完整的理财计划'],
       },
       focus: {
         label: '我没法集中注意力',

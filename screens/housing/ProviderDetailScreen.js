@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Linking, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
@@ -7,18 +7,9 @@ import { useT } from '../../i18n';
 export default function ProviderDetailScreen({ navigation, route }) {
   const t = useT();
   const { provider } = route.params;
-  const [saved, setSaved] = useState(false);
 
   const handleWebsite = () => {
     Linking.openURL(provider.website).catch(() => Alert.alert(t('common.error'), t('housing.cantOpenWebsite')));
-  };
-
-  const toggleSave = () => {
-    setSaved(!saved);
-    Alert.alert(
-      saved ? t('housing.removed') : t('housing.saved'),
-      t(saved ? 'housing.removedFromFav' : 'housing.savedToFav', { name: provider.name }),
-    );
   };
 
   return (
@@ -35,9 +26,6 @@ export default function ProviderDetailScreen({ navigation, route }) {
             <Text style={styles.heroName}>{provider.name}</Text>
             <Text style={styles.heroPrice}>{provider.priceRange}</Text>
           </View>
-          <TouchableOpacity style={styles.favBtn} onPress={toggleSave}>
-            <Text style={styles.favIcon}>{saved ? '★' : '☆'}</Text>
-          </TouchableOpacity>
         </View>
         {provider.billsIncluded && (
           <View style={styles.metaRow}>
@@ -93,26 +81,9 @@ export default function ProviderDetailScreen({ navigation, route }) {
             </View>
           </View>
 
-          {provider.tiers && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t('housing.tiers')}</Text>
-              <View style={styles.tierRow}>
-                {provider.tiers.map((tier, i) => (
-                  <View key={i} style={styles.tierCard}>
-                    <Text style={styles.tierName}>{tier}</Text>
-                    <Text style={styles.tierSub}>{t('housing.tapExplore')}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-
           <View style={styles.actions}>
             <TouchableOpacity style={styles.primaryBtn} onPress={handleWebsite} activeOpacity={0.85}>
               <Text style={styles.primaryBtnText}>{t('housing.visitWebsite')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.secondaryBtn} onPress={toggleSave} activeOpacity={0.85}>
-              <Text style={styles.secondaryBtnText}>{saved ? `★ ${t('housing.saved')}` : `☆ ${t('housing.saveToFav')}`}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -143,8 +114,6 @@ const styles = StyleSheet.create({
   heroText: { flex: 1 },
   heroName: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, letterSpacing: -0.3, marginBottom: 2 },
   heroPrice: { fontSize: 13, color: Colors.textLight },
-  favBtn: { backgroundColor: Colors.primaryLight, borderRadius: 9, padding: 9 },
-  favIcon: { fontSize: 18, color: Colors.primary },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 12 },
   billsBadge: { backgroundColor: Colors.primaryLight, borderRadius: 5, paddingHorizontal: 9, paddingVertical: 3 },
   billsBadgeText: { fontSize: 10, color: Colors.primary, fontWeight: '600' },
@@ -166,13 +135,7 @@ const styles = StyleSheet.create({
   locText: { fontSize: 14, color: Colors.textPrimary },
   uniTag: { borderRadius: 20, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 13, paddingVertical: 6 },
   uniTagText: { fontSize: 12, color: Colors.textPrimary },
-  tierRow: { flexDirection: 'row', gap: 8 },
-  tierCard: { flex: 1, borderRadius: 10, borderWidth: 1, borderColor: Colors.border, padding: 14, alignItems: 'center' },
-  tierName: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginBottom: 3 },
-  tierSub: { fontSize: 11, color: Colors.textMuted },
   actions: { gap: 8, paddingBottom: 8 },
   primaryBtn: { backgroundColor: Colors.primary, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   primaryBtnText: { color: Colors.white, fontSize: 15, fontWeight: '600' },
-  secondaryBtn: { borderWidth: 1, borderColor: Colors.border, borderRadius: 12, paddingVertical: 14, alignItems: 'center', backgroundColor: Colors.surface },
-  secondaryBtnText: { fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
 });
