@@ -2,6 +2,11 @@
 
 Working rules: plan first, one fix or batch per commit, test on a phone before moving on.
 
+## Schedule to the client meeting (agreed 15 Oct)
+- Oct 16-17/18: C3 · Oct 18-19: C6 (Blaze + Budget Buddy deploy) · Oct 19-20: C4
+- Oct 20: H3 · Oct 21: buffer · Oct 22: prep · Oct 23: client meeting
+- Budget Buddy confirmed broken on the phone (15 Oct): shows "I couldn't connect right now".
+
 ## Next session: C3 (verified email before roommate contact details)
 Copy the live rules from the Firebase console first; they may differ from `firestore.rules`.
 Budget Buddy still can't answer at all (connection error) until C6 deploys `chat` with the new prompt.
@@ -16,7 +21,7 @@ Later: London-aware Budget Buddy (Oyster, Zone 1-2 travel, London rent).
 ### Critical
 - [ ] C3: require a verified email (any domain) before students can read roommate contact details. Rules change goes through the console.
 - [ ] C4: report and block on roommate profiles (App Store guideline 1.2).
-- [ ] C6 (after C3 and C4): first deploy of Budget Buddy. The project is on Spark and `chat` has
+- [ ] C6 (after C3, before C4): first deploy of Budget Buddy. The project is on Spark and `chat` has
       never been deployed, so Budget Buddy can't answer yet. Needs Blaze + a Gemini key secret.
       Steps, region choice and phone test: LAUNCH_READINESS.md appendix. Never a plain `firebase deploy`.
 

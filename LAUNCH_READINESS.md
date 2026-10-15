@@ -45,7 +45,7 @@ C3, C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy pol
 | **N1** Privacy policy + terms, linked from Signup and Settings | 4–6 h (draft + hosting + in-app links) | **Client:** legal entity / data controller name, contact email. Ideally a short legal review. | **Store rejection** (both stores). UK GDPR breach (ICO complaints, fines). | You can't publish at all without it. |
 | **C3** Verified email before seeing contact details | 3–5 h | Copy **live** rules from the console first (they may differ from `firestore.rules`) | Anyone with a throwaway email can **collect every student's WhatsApp number**. Personal data breach, reputational damage. | Trust is the product for a roommate app. One "my number got scraped" post ends it. |
 | **C4** Report + block on roommate profiles | 4–6 h | C3 (same rules work); **who reviews reports?** (client decision) | **App Store rejection** under guideline 1.2 (user-generated content must have report, block and contact). Harassment with no recourse. | Rejection costs 1–3 days per resubmission. |
-| **C6** First deploy of Budget Buddy (after C3 and C4) | ~1 h + phone test | **Blaze upgrade** (card), a Gemini key from AI Studio, `firebase-tools` ✅ installed and logged in | Budget Buddy is a dead screen: every message shows "I couldn't connect" | A broken feature in the demo and at launch. Alternative: hide Budget Buddy for V1 (P1). |
+| **C6** First deploy of Budget Buddy (after C3, before C4) | ~1 h + phone test | **Blaze upgrade** (card), a Gemini key from AI Studio, `firebase-tools` ✅ installed and logged in | Budget Buddy is a dead screen: every message shows "I couldn't connect" | A broken feature in the demo and at launch. Alternative: hide Budget Buddy for V1 (P1). |
 | **P1** Hide Tutors, Housekeeper, Jobs | 1 h | Client sign-off on V1 scope | Launching 3 empty or unvetted marketplaces. **Housekeeper = unvetted strangers in students' homes** (safety and liability). | A smaller, solid V1 makes a better first impression |
 | **Store prep** EAS builds, icons, screenshots, listings, privacy labels / data safety form | 1–2 days | N1, N2, developer accounts (section 6) | Can't launch | — plus review time: Apple 1–3 days; **Google may need 14 days** (section 4) |
 
@@ -220,7 +220,7 @@ Everything in 🅱, plus P2 · P3 · P4 · U4–U5 · M3 · full Chinese review 
 
 ## Appendix: C6, first deploy of Budget Buddy (plan only, not started)
 
-**When:** after C3 and C4, before public launch. Not needed for the client meeting (skip Budget Buddy in the demo if it isn't done). **About 1 hour** plus the phone test.
+**When:** Oct 18-19, after C3 and before C4, so Budget Buddy works in the Oct 23 client demo (skip it in the demo if C6 slips). **About 1 hour** plus the phone test.
 
 **Why it's small:** the secure setup already exists. The app calls the `chat` Cloud Function (`functions/index.js`), which holds the prompt and reads the Gemini key from a server-side secret. The key is never in the app. It has just never been deployed.
 
