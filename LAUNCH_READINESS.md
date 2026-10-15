@@ -18,15 +18,12 @@ Estimates are **focused build time with Claude Code**, plus your phone testing. 
 | **C5 batch 3** | Every fake star rating and review count removed |
 | **C5 batch 4** | Fake "Save to favourites", fake "Tap to explore" tiers, "Trusted", "up to 40%" and "2–3 days" removed; Save the Student added; unused sample data deleted; `.gitignore` guard |
 
-### ⏳ Committed locally, **not pushed** (needs your phone check)
-- `c551a79` Exam empty state with ✓ benefits and an "+ Add first exam" button
-- `99fa83c` `TODO.md`
-
-### 🔶 In progress
-- **C5 batch 5: Budget Buddy AI prompt.** It's planned, and a draft of the new prompt is in the **Appendix**. Paused until `firebase-tools` is installed and billing is checked.
+| **C5 batch 5** | Budget Buddy prompt: no exact prices, discounts or fixed sticker times stated as fact; rough ranges first, then UNiDAYS / Student Beans. *Prompt only. It reaches students with the C6 deploy.* |
 
 ### ⬜ Not started
-C3, C4, the **privacy policy and terms (new, see below)**, H2–H5, M1–M3, P1–P4, U1–U5, roommate empty state, store builds and listings.
+C3, C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy policy and terms (new, see below)**, H2–H5, M1–M3, P1–P4, U1–U5, roommate empty state, store builds and listings.
+
+> ⚠️ **Budget Buddy doesn't work yet** (corrected 15 Oct). The project is on the free **Spark** plan and the `chat` Cloud Function has **never been deployed**, so the app can only show "I couldn't connect right now". The code is ready; C6 is the deploy.
 
 ### 🆕 Found during this review (not in earlier plans)
 | # | Finding | Why it matters |
@@ -36,7 +33,7 @@ C3, C4, the **privacy policy and terms (new, see below)**, H2–H5, M1–M3, P1�
 | **N3** | **Never tested as a real production build** (as far as I can tell). There's no `expo-notifications` plugin in `app.json`. | Expo Go behaves differently from a store build. Notifications and permissions are the usual surprise. Do one EAS "preview" build early. |
 | **N4** | **No crash reporting or analytics** | After launch you won't know if the app crashes or which features students use. That makes the client's "is it working?" question hard to answer. |
 | **N5** | `README.md` only contains three stray git commands | Cosmetic, but the client or a future developer may look at it. |
-| **N6** | `BATCH_5_TODO.md` (untracked, written separately) has two small issues | Its "grep for `AIza`" step **will find a key**: the Firebase web key in `firebase.js`. That one is **public by design**, so it does **not** need rotating. It also says "Upgrade to Blaze", but you're probably **already on Blaze** (see section 6). Suggest merging it into `TODO.md` and deleting it. |
+| **N6** | `BATCH_5_TODO.md` (untracked, written separately) has two small issues | Its "grep for `AIza`" step **will find a key**: the Firebase web key in `firebase.js`. That one is **public by design**, so it does **not** need rotating. Its "Upgrade to Blaze" step is right: the project is on Spark (checked 15 Oct), see C6. Suggest merging it into `TODO.md` and deleting it. |
 
 ---
 
@@ -48,14 +45,14 @@ C3, C4, the **privacy policy and terms (new, see below)**, H2–H5, M1–M3, P1�
 | **N1** Privacy policy + terms, linked from Signup and Settings | 4–6 h (draft + hosting + in-app links) | **Client:** legal entity / data controller name, contact email. Ideally a short legal review. | **Store rejection** (both stores). UK GDPR breach (ICO complaints, fines). | You can't publish at all without it. |
 | **C3** Verified email before seeing contact details | 3–5 h | Copy **live** rules from the console first (they may differ from `firestore.rules`) | Anyone with a throwaway email can **collect every student's WhatsApp number**. Personal data breach, reputational damage. | Trust is the product for a roommate app. One "my number got scraped" post ends it. |
 | **C4** Report + block on roommate profiles | 4–6 h | C3 (same rules work); **who reviews reports?** (client decision) | **App Store rejection** under guideline 1.2 (user-generated content must have report, block and contact). Harassment with no recourse. | Rejection costs 1–3 days per resubmission. |
-| **C5 batch 5** Budget Buddy prompt | 1–2 h | `firebase-tools` installed + logged in; billing checked | The AI tells every student unverified prices and discounts ("40% Pizza Express discount") | Students act on wrong information; misleading-information risk |
+| **C6** First deploy of Budget Buddy (after C3 and C4) | ~1 h + phone test | **Blaze upgrade** (card), a Gemini key from AI Studio, `firebase-tools` ✅ installed and logged in | Budget Buddy is a dead screen: every message shows "I couldn't connect" | A broken feature in the demo and at launch. Alternative: hide Budget Buddy for V1 (P1). |
 | **P1** Hide Tutors, Housekeeper, Jobs | 1 h | Client sign-off on V1 scope | Launching 3 empty or unvetted marketplaces. **Housekeeper = unvetted strangers in students' homes** (safety and liability). | A smaller, solid V1 makes a better first impression |
 | **Store prep** EAS builds, icons, screenshots, listings, privacy labels / data safety form | 1–2 days | N1, N2, developer accounts (section 6) | Can't launch | — plus review time: Apple 1–3 days; **Google may need 14 days** (section 4) |
 
 ### 🟠 High: strongly recommended for launch
 | Item | Time | Prerequisites | Risk if skipped | Business impact |
 |---|---|---|---|---|
-| **H2** Per-user rate limit on `chat` | 2–3 h | Batch 5 deploy setup done | One user (or script) can burn the Gemini quota: **Budget Buddy breaks for everyone**, or the bill spikes on the paid tier | Feature outage in launch week |
+| **H2** Per-user rate limit on `chat` | 2–3 h | C6 done (do straight after it) | One user (or script) can burn the Gemini quota: **Budget Buddy breaks for everyone**, or the bill spikes on the paid tier | Feature outage in launch week |
 | **H3** Ask for notification permission at the first exam, not on first launch | 1 h | — | iOS asks **once**. If students decline on a cold start, exam reminders are dead for good. | The "we'll remind you" promise on the exam screen fails |
 | **H4** Lock tutor applications in the rules | 1 h | P1 decision | **Hiding the screen doesn't close the database.** Anyone can still write unlimited junk to `tutors`. | Cost / abuse vector |
 | **H5** Cancel exam reminders when an exam is deleted | 1–2 h | — | "Your exam is tomorrow" for exams that were removed | Looks broken, erodes trust |
@@ -83,7 +80,7 @@ C3, C4, the **privacy policy and terms (new, see below)**, H2–H5, M1–M3, P1�
 ### 🅰 Minimum viable: "safe to put in front of real students"
 **About 3.5–4.5 build days** + store review
 
-N1 · N2 · C3 · C4 · C5 batch 5 · P1 · H3 · H4 · store prep
+N1 · N2 · C3 · C4 · C6 · P1 · H3 · H4 · store prep
 
 - ✅ Legal minimum met, no known privacy hole, honest content, store-compliant.
 - ❌ Empty roommate tab, generic onboarding, free-text university, no crash reporting.
@@ -104,7 +101,7 @@ Everything in 🅱, plus P2 · P3 · P4 · U4–U5 · M3 · full Chinese review 
 
 - **Doesn't fit before the meeting.** Present it as the "V1.1, 2–3 weeks after launch" roadmap.
 
-**Suggested schedule for 🅱:** Days 1–2: batch 5, C3, H3, H4 · Days 3–4: C4, M1, H5, H2 · Day 5: N1, N2, P1, empty state · Days 6–7: U1–U3, N3, N4, M2 · Days 8–10: store prep, buffer, client demo build.
+**Suggested schedule for 🅱:** Days 1–2: ✅ batch 5, C3, H3, H4 · Days 3–4: C4, C6 + H2, M1, H5 · Day 5: N1, N2, P1, empty state · Days 6–7: U1–U3, N3, N4, M2 · Days 8–10: store prep, buffer, client demo build.
 
 ---
 
@@ -153,7 +150,7 @@ Everything in 🅱, plus P2 · P3 · P4 · U4–U5 · M3 · full Chinese review 
 ## 5. Client meeting prep
 
 ### Show them
-1. **A live demo on your phone:** Signup → profile setup → Study (add an exam, show the ✓ empty state and progress bar) → **MindNest + 🆘 Get help now** → Accommodation → Roommates (post a profile) → Budget Buddy → Chinese mode.
+1. **A live demo on your phone:** Signup → profile setup → Study (add an exam, show the ✓ empty state and progress bar) → **MindNest + 🆘 Get help now** → Accommodation → Roommates (post a profile) → Budget Buddy (**only if C6 is deployed by then**, otherwise skip it) → Chinese mode.
 2. **The integrity story:** "we removed every fake rating, user number and listing." It's a selling point for students *and* a legal safeguard.
 3. **This document's section 3**, then let them choose the scenario.
 
@@ -198,9 +195,9 @@ Everything in 🅱, plus P2 · P3 · P4 · U4–U5 · M3 · full Chinese review 
 **Then the rest:** about **600 more strings** in `i18n/zh.js` were written before these sessions. I don't know whether a native speaker has checked them. Suggest one full read-through by a native speaker (around 2–3 hours of their time).
 
 ### 💳 Firebase / Google Cloud
-- **Plan:** probably **already on Blaze**. Cloud Functions can't be deployed on the free plan, and Budget Buddy works. Check under *Usage and billing*.
+- **Plan:** **Spark** (free; checked 15 Oct). Cloud Functions need **Blaze** on any region, so C6 needs the upgrade. Blaze keeps the free monthly allowances (about 2M function calls), so a small test group should cost £0; the $300 Google Cloud credit is extra cushion.
 - **Budget alerts:** Google Cloud Billing → Budgets & alerts. Alerts warn you; they **don't** cap spending.
-- **Gemini API key:** ✅ **not in the code or git history.** It's stored as a Cloud Functions secret, which is correct. Check the tier and terms (section 4).
+- **Gemini API key:** ✅ **not in the app code or git history** (re-checked 15 Oct). The code reads it from a Cloud Functions secret, which is correct, but the secret **hasn't been set yet** (part of C6). Check the tier and terms (section 4).
 - **Firebase web key** (`firebase.js`): public by design, ✅ fine. Restrict it to your app in *APIs & Services → Credentials*.
 - ⚠️ **Local, never-committed** `.env` and `constants/config.js` contain a key, possibly the old Anthropic key "no longer used". **Revoke it if it's still active.**
 - **Password-reset email template** (sender name, wording). Steps are in the C1 notes.
@@ -221,72 +218,30 @@ Everything in 🅱, plus P2 · P3 · P4 · U4–U5 · M3 · full Chinese review 
 
 ---
 
-## Appendix: C5 batch 5 plan (draft only, not applied)
+## Appendix: C6, first deploy of Budget Buddy (plan only, not started)
 
-**File:** `functions/prompts.js` (the server-side system prompt for Budget Buddy). **Nothing changes until approved and deployed.**
+**When:** after C3 and C4, before public launch. Not needed for the client meeting (skip Budget Buddy in the demo if it isn't done). **About 1 hour** plus the phone test.
 
-### Proposed new prompt (draft for review)
-```
-You are Budget Buddy, an assistant for university students living in London and across the UK. Give practical, specific and friendly money advice.
+**Why it's small:** the secure setup already exists. The app calls the `chat` Cloud Function (`functions/index.js`), which holds the prompt and reads the Gemini key from a server-side secret. The key is never in the app. It has just never been deployed.
 
-GROUND RULES
-- Never state exact prices, discount percentages or deal details as fact. They change often.
-- When cost helps, give a rough range and say it's approximate.
-- Point students to the brand's own app or website, UNiDAYS or Student Beans for current offers.
+### Steps (together, not alone)
+1. Upgrade the project to **Blaze** and set a budget alert (e.g. £5) under Google Cloud Billing → Budgets & alerts. Alerts warn; they don't cap spending.
+2. Get a Gemini key from https://aistudio.google.com/apikey, check its tier and terms (section 4), then `firebase functions:secrets:set GEMINI_API_KEY`.
+3. Choose the region. **us-central1** (the default) needs no code change. **europe-west2** (next to Firestore, faster for UK users) needs `onCall({ region: 'europe-west2', ... })` in `functions/index.js` **and** `getFunctions(app, 'europe-west2')` in `firebase.js`, changed together.
+4. `cd functions && npm install && cd ..`
+5. `firebase deploy --only functions:chat` (**never a plain `firebase deploy`**: it would overwrite the Firestore rules published in the console).
+6. If the deploy rejects Node 20: change `"node": "20"` to `"22"` in `functions/package.json`, commit, redeploy.
+7. Phone test (below). Logs: `firebase functions:log --only chat`.
+8. Do **H2** (per-user rate limit) straight after, before the app is public.
 
-CHEAP EATING OUT
-- Suggest well-known budget-friendly chains: Wetherspoons, Greggs, Subway, Pret, Nando's, Pizza Express, Leon, McDonald's.
-- Many offer student deals through UNiDAYS or Student Beans; tell students to check there.
-- Mention Too Good To Go for discounted surplus food from restaurants and shops.
-- End with one practical tip.
+### Phone test (also checks C5 batch 5)
+| Ask | Should see | Should NOT see |
+|---|---|---|
+| "Is there a Pizza Express student discount?" | A helpful answer, then "check UNiDAYS / Student Beans or their app" | "40% off" or any fixed percentage |
+| "Best supermarkets" chip | Aldi and Lidl usually cheapest; evening yellow stickers, times vary | "30–40% less than Tesco", "after 7pm", "Specially Selected" |
+| "Cheap places to eat out?" | Brand names with rough approximate ranges, not just a redirect | "Pret £7.99", "Subway £4.50", "Nando's £8.45" |
+| "I have £500 this month" | Breakdown labelled as rough guidance, adjusted to £500 | Amounts presented as facts |
+| "Money-saving apps?" | Too Good To Go, OLIO, UNiDAYS, TopCashback | Karma |
+| Same question in Chinese mode | Reply in Chinese, £ kept | — |
 
-SUPERMARKETS
-- Aldi and Lidl are usually the cheapest supermarkets (Which?'s monthly price tracker).
-- Loyalty schemes like Lidl Plus and Tesco Clubcard can bring prices down further.
-- Supermarket own-brand basics are usually much cheaper than big brands.
-- Yellow-sticker reductions usually appear in the evening; times vary by store.
-
-BUDGET MEALS
-- Give 5 simple meal ideas (pasta, rice bowls, stir fries, egg dishes, bean or lentil curries) with a rough ingredient list.
-- Give an approximate cost per serving and say it's an estimate.
-- Add one batch-cooking tip.
-
-MONTHLY BUDGET PLANS (e.g. "I have £500 this month")
-- Give a suggested breakdown, clearly labelled as rough guidance, for example: groceries £120-150, eating out £40-60, transport £40-80, social £50-80, subscriptions/personal care £20-30, emergency savings £30-50. Adjust to the amount they have.
-- In London, mention the 18+ Student Oyster photocard for discounted travelcards and bus passes.
-- Give 4–5 specific tips for that budget.
-
-MONEY-SAVING TIPS
-- Student discounts: UNiDAYS, TOTUM, Student Beans.
-- Food: Too Good To Go, OLIO.
-- Cashback: TopCashback, Quidco.
-- Bills: Uswitch for comparing energy and broadband, Splitwise for splitting bills.
-- Free food at university events and society meetings.
-
-STYLE
-Always use £. Keep answers under 300 words unless a full budget breakdown is needed. Use bullet points and short lines. Be friendly and encouraging.
-```
-
-### Changes from the current prompt
-| Removed / changed | Why |
-|---|---|
-| Exact prices (Pret £7.99, Subway £4.50, Greggs under £4, Nando's ~£8.45) | Go stale; unverified |
-| "Pizza Express 40% student discount", "Nando's with UNiDAYS" | Unverified offers; students may turn up expecting them |
-| "Lidl and Aldi 30–40% less than Tesco" → "usually the cheapest (Which?)" | The real 2026 gap is about 15%; matches the batch 4 in-app wording |
-| Fixed yellow-sticker times (Tesco after 7pm, Asda from 6pm) | Times vary by store |
-| "Aldi Specially Selected" | A premium range, not a saving |
-| Karma app | Can't confirm it still operates in the UK |
-| Budget breakdown amounts (groceries £120–150 etc.) | **Kept**, but the AI must label them as rough guidance and adjust to the student's budget. They're planning advice, not price claims. |
-| ➕ Ground rules section | Stops the AI inventing its own prices for questions we didn't plan for |
-| ➕ London awareness (Student Oyster) | Optional: matches the London positioning. Remove if not wanted. |
-
-**Still to confirm:** that the 18+ Student Oyster discount is still current (TfL), and that the Chinese reply rule in `functions/index.js` stays untouched (it does).
-
-### Deploy steps (with you, not alone)
-1. `npm install -g firebase-tools` → `firebase login`
-2. `cd functions && npm install && cd ..`
-3. Commit: "C5 batch 5: remove unverified prices from Budget Buddy prompt"
-4. `firebase deploy --only functions:chat` (**never a plain `firebase deploy`**)
-5. If the deploy rejects Node 20: change `"node": "20"` to `"22"` in `functions/package.json`, commit, then redeploy.
-6. Verify: the "Best supermarkets" chip; ask "Is there a Pizza Express student discount?"; `firebase functions:log --only chat`
-7. Push to GitHub.
+**Later:** London-aware Budget Buddy (Oyster, Zone 1–2 travel, London rent) and a native-speaker check of the Chinese replies.
