@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Text, View, Alert } from 'react-native';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../firebase';
 import Colors from '../constants/Colors';
 import { useT } from '../i18n';
@@ -21,7 +21,11 @@ export default function SignupScreen({ navigation }) {
     if (password.length < 6) { Alert.alert(t('common.error'), t('auth.passwordTooShort')); return; }
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      // Needed later to contact or post roommates. If it fails, the
+      // student can resend it from the Roommates screen.
+      sendEmailVerification(user).catch(err =>
+        console.error('Verification email failed:', err.code));
     } catch (error) {
       setLoading(false);
       let msg = t('auth.signupFailedGeneric');

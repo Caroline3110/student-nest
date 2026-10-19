@@ -9,7 +9,8 @@ import Colors from '../constants/Colors';
 import { useProfile } from '../hooks/useProfile';
 import { useT } from '../i18n';
 import { auth, db } from '../firebase';
-import { collection, doc, setDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot, query, orderBy, writeBatch } from 'firebase/firestore';
+import { sendEmailVerification } from 'firebase/auth';
 
 const BUDGET_FILTERS = ['All', 'Under £600', '£600–£900', '£900–£1200', '£1200+'];
 
@@ -84,6 +85,48 @@ export default function RoommateFinderScreen({ navigation }) {
     return matchSearch && matchesBudget(r.budget);
   });
 
+  // Contacting and posting need a verified email (the rules check the
+  // email_verified flag in the login token).
+  const resendVerification = async () => {
+    const email = auth.currentUser?.email;
+    try {
+      await sendEmailVerification(auth.currentUser);
+      Alert.alert(t('verify.sentTitle'), t('verify.sent', { email }));
+    } catch (err) {
+      Alert.alert(t('common.error'),
+        err.code === 'auth/too-many-requests' ? t('verify.wait') : t('verify.failed'));
+    }
+  };
+
+  const checkVerified = async (onVerified) => {
+    try {
+      const user = auth.currentUser;
+      await user.reload();
+      if (!user.emailVerified) {
+        Alert.alert(t('verify.notYetTitle'), t('verify.notYet'));
+        return;
+      }
+      // The token still says unverified until it's refreshed.
+      await user.getIdToken(true);
+      onVerified();
+    } catch {
+      Alert.alert(t('common.error'), t('verify.failed'));
+    }
+  };
+
+  const askToVerify = (onVerified) => {
+    Alert.alert(t('verify.title'), t('verify.body', { email: auth.currentUser?.email }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('verify.resend'), onPress: resendVerification },
+      { text: t('verify.done'), onPress: () => checkVerified(onVerified) },
+    ]);
+  };
+
+  const whenVerified = (action) => {
+    if (auth.currentUser?.emailVerified) action();
+    else askToVerify(action);
+  };
+
   const submitProfile = async () => {
     if (!form.name.trim()) {
       Alert.alert(t('roommates.missingField'), t('roommates.enterName'));
@@ -93,12 +136,18 @@ export default function RoommateFinderScreen({ navigation }) {
       Alert.alert(t('roommates.contactRequired'), t('roommates.addContact'));
       return;
     }
+    if (!auth.currentUser?.emailVerified) {
+      askToVerify(submitProfile);
+      return;
+    }
     setSubmitting(true);
     try {
       // One profile per account: the doc ID is the user's UID, so posting
       // again replaces their previous profile instead of adding another.
+      // Contact details go in a separate doc that only verified students can read.
       const uid = auth.currentUser.uid;
-      await setDoc(doc(db, 'roommates', uid), {
+      const batch = writeBatch(db);
+      batch.set(doc(db, 'roommates', uid), {
         ownerUid: uid,
         name: form.name.trim(),
         nationality: form.nationality.trim(),
@@ -109,10 +158,13 @@ export default function RoommateFinderScreen({ navigation }) {
         hobbies: form.hobbies.trim(),
         lifestyle,
         about: form.about.trim(),
-        whatsapp: form.whatsapp.trim(),
-        email: form.email.trim(),
         createdAt: new Date().toISOString(),
       });
+      batch.set(doc(db, 'roommates', uid, 'private', 'contact'), {
+        whatsapp: form.whatsapp.trim(),
+        email: form.email.trim(),
+      });
+      await batch.commit();
       setDone(true);
       setForm({ name: '', nationality: '', university: '', year: '', budget: '', area: '', hobbies: '', about: '', whatsapp: '', email: '' });
       setLifestyle([]);
@@ -129,18 +181,31 @@ export default function RoommateFinderScreen({ navigation }) {
       Alert.alert(t('tutors.couldNotOpen'), t('tutors.noApp')));
   };
 
-  const contactRoommate = (r) => {
+  const contactRoommate = async (r) => {
+    let contact;
+    try {
+      const snap = await getDoc(doc(db, 'roommates', r.id, 'private', 'contact'));
+      contact = snap.data();
+    } catch (err) {
+      if (err.code === 'permission-denied') askToVerify(() => contactRoommate(r));
+      else Alert.alert(t('common.error'), t('roommates.contactFailed'));
+      return;
+    }
+    if (!contact?.whatsapp && !contact?.email) {
+      Alert.alert(t('tutors.contactName', { name: r.name }), t('roommates.noContact'));
+      return;
+    }
     const options = [];
-    if (r.whatsapp) {
+    if (contact.whatsapp) {
       options.push({
         text: 'WhatsApp',
-        onPress: () => openLink(`https://wa.me/${r.whatsapp.replace(/\D/g, '')}`),
+        onPress: () => openLink(`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`),
       });
     }
-    if (r.email) {
+    if (contact.email) {
       options.push({
         text: t('auth.email'),
-        onPress: () => openLink(`mailto:${r.email.trim()}?subject=${encodeURIComponent('Roommate enquiry via Student Nest')}`),
+        onPress: () => openLink(`mailto:${contact.email.trim()}?subject=${encodeURIComponent('Roommate enquiry via Student Nest')}`),
       });
     }
     options.push({ text: t('common.cancel'), style: 'cancel' });
@@ -264,7 +329,7 @@ export default function RoommateFinderScreen({ navigation }) {
                   <Text style={styles.cardAbout} numberOfLines={3}>{r.about}</Text>
                 ) : null}
 
-                <TouchableOpacity style={styles.contactBtn} onPress={() => contactRoommate(r)} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.contactBtn} onPress={() => whenVerified(() => contactRoommate(r))} activeOpacity={0.8}>
                   <Text style={styles.contactBtnText}>{t('tutors.contactName', { name: r.name.split(' ')[0] })}</Text>
                 </TouchableOpacity>
               </View>

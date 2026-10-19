@@ -21,6 +21,7 @@ const deleteUserData = async (uid) => {
     const snap = await getDocs(collection(db, 'users', uid, name));
     await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
   }
+  await deleteDoc(doc(db, 'roommates', uid, 'private', 'contact')).catch(() => {});
   await deleteDoc(doc(db, 'roommates', uid)).catch(() => {});
   await deleteDoc(doc(db, 'users', uid));
 };
