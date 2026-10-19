@@ -3,7 +3,7 @@
 Working rules: plan first, one fix or batch per commit, test on a phone before moving on.
 
 ## Schedule to the client meeting (updated 19 Oct)
-- Tue 20: C3 part 2 · Wed 22: C4 + C6 (Blaze + Budget Buddy deploy) · Thu 23 morning: prep, then client meeting
+- Tue 20: C3 part 2 · Wed 21: C4 + C6 (Blaze + Budget Buddy deploy) · Thu 22: prep, then client meeting
 
 ## Next session: C3 part 2
 - "Email already in use": point to Sign in / Forgot password.
@@ -28,7 +28,7 @@ Later: London-aware Budget Buddy (Oyster, Zone 1-2 travel, London rent).
 ### Critical
 - [ ] C3 part 2 (part 1 done 19 Oct). Rules changes go through the console.
 - [ ] C4: report and block on roommate profiles (App Store guideline 1.2).
-- [ ] C6 (Wed 22 Oct, with C4): first deploy of Budget Buddy. The project is on Spark and `chat` has
+- [ ] C6 (Wed 21 Oct, with C4): first deploy of Budget Buddy. The project is on Spark and `chat` has
       never been deployed, so Budget Buddy can't answer yet. Needs Blaze + a Gemini key secret.
       Steps, region choice and phone test: LAUNCH_READINESS.md appendix. Never a plain `firebase deploy`.
 

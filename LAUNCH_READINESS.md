@@ -1,6 +1,6 @@
 # Student Nest: Launch Readiness
 
-*Prepared 14 Oct 2026, updated 19 Oct · client meeting Thu 23 Oct*
+*Prepared 14 Oct 2026, updated 19 Oct · client meeting Thu 22 Oct*
 
 Estimates are **focused build time with Claude Code**, plus your phone testing. Store review and waiting times are listed separately, because they're outside our control.
 
@@ -227,7 +227,7 @@ Everything in 🅱, plus P2 · P3 · P4 · U4–U5 · M3 · full Chinese review 
 
 ## Appendix: C6, first deploy of Budget Buddy (plan only, not started)
 
-**When:** Wed 22 Oct with C4, so Budget Buddy works in the Oct 23 client demo (skip it in the demo if C6 slips). **About 1 hour** plus the phone test.
+**When:** Wed 21 Oct with C4, so Budget Buddy works in the Oct 22 client demo (skip it in the demo if C6 slips). **About 1 hour** plus the phone test.
 
 **Why it's small:** the secure setup already exists. The app calls the `chat` Cloud Function (`functions/index.js`), which holds the prompt and reads the Gemini key from a server-side secret. The key is never in the app. It has just never been deployed.
 
