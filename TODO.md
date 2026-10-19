@@ -2,14 +2,21 @@
 
 Working rules: plan first, one fix or batch per commit, test on a phone before moving on.
 
-## Schedule to the client meeting (agreed 15 Oct)
-- Oct 16-17/18: C3 · Oct 18-19: C6 (Blaze + Budget Buddy deploy) · Oct 19-20: C4
-- Oct 20: H3 · Oct 21: buffer · Oct 22: prep · Oct 23: client meeting
-- Budget Buddy confirmed broken on the phone (15 Oct): shows "I couldn't connect right now".
+## Schedule to the client meeting (updated 19 Oct)
+- Tue 20: C3 part 2 · Wed 22: C4 + C6 (Blaze + Budget Buddy deploy) · Thu 23 morning: prep, then client meeting
 
-## Next session: C3 (verified email before roommate contact details)
-Copy the live rules from the Firebase console first; they may differ from `firestore.rules`.
-Budget Buddy still can't answer at all (connection error) until C6 deploys `chat` with the new prompt.
+## Next session: C3 part 2
+- "Email already in use": point to Sign in / Forgot password.
+- Send the verification email in Chinese for Chinese-mode users (`auth.languageCode`).
+- Console: sender name "Student Nest" in Authentication → Templates (verification + password reset).
+- M2: "profiles listed" untranslated on Roommates.
+- Full phone test incl. Chinese mode, then commit "C3 part 2".
+
+## Done 19 Oct
+- S1: live Firestore rules were wide open (anyone could read roommate contact details without an
+  account). Published the repo's `firestore.rules`; anonymous reads now refused.
+- C3 part 1: verification email at signup; contacting or posting roommates needs a verified email;
+  contact details live in `/roommates/{uid}/private/contact`. Test posts deleted.
 
 ## Done: C5 batch 5 (15 Oct)
 Budget Buddy prompt (`functions/prompts.js`) no longer states prices, discounts or sticker times
@@ -19,9 +26,9 @@ Later: London-aware Budget Buddy (Oyster, Zone 1-2 travel, London rent).
 ## Still to do before launch
 
 ### Critical
-- [ ] C3: require a verified email (any domain) before students can read roommate contact details. Rules change goes through the console.
+- [ ] C3 part 2 (part 1 done 19 Oct). Rules changes go through the console.
 - [ ] C4: report and block on roommate profiles (App Store guideline 1.2).
-- [ ] C6 (after C3, before C4): first deploy of Budget Buddy. The project is on Spark and `chat` has
+- [ ] C6 (Wed 22 Oct, with C4): first deploy of Budget Buddy. The project is on Spark and `chat` has
       never been deployed, so Budget Buddy can't answer yet. Needs Blaze + a Gemini key secret.
       Steps, region choice and phone test: LAUNCH_READINESS.md appendix. Never a plain `firebase deploy`.
 

@@ -1,6 +1,6 @@
 # Student Nest: Launch Readiness
 
-*Prepared 14 Oct 2026 · client meeting Thu 22 / Fri 23 Oct · about 10 working days*
+*Prepared 14 Oct 2026, updated 19 Oct · client meeting Thu 23 Oct*
 
 Estimates are **focused build time with Claude Code**, plus your phone testing. Store review and waiting times are listed separately, because they're outside our control.
 
@@ -17,11 +17,18 @@ Estimates are **focused build time with Claude Code**, plus your phone testing. 
 | **C5 batch 2** | "Join 1,000+ KCL students" and "Join thousands" replaced with "Built by a London student, for London students 💙" |
 | **C5 batch 3** | Every fake star rating and review count removed |
 | **C5 batch 4** | Fake "Save to favourites", fake "Tap to explore" tiers, "Trusted", "up to 40%" and "2–3 days" removed; Save the Student added; unused sample data deleted; `.gitignore` guard |
-
 | **C5 batch 5** | Budget Buddy prompt: no exact prices, discounts or fixed sticker times stated as fact; rough ranges first, then UNiDAYS / Student Beans. *Prompt only. It reaches students with the C6 deploy.* |
+| **S1** Database lockdown (19 Oct, console) | The live rules were wide open: **anyone, even without an account, could read every roommate's WhatsApp and email and edit or delete any profile**; any account could approve itself as a tutor or add housekeepers. Published the repo's rules: sign-in required everywhere, owners only edit their own data, only admins approve tutors or add housekeepers. Checked from outside: anonymous reads now refused. |
+| **C3 part 1** | Verification email sent at signup. Anyone signed in can browse roommates, but **contacting or posting needs a verified email** (Resend / "I've verified" prompt). WhatsApp and email moved to a separate doc only verified students can read. Old test posts deleted. Phone-tested 19 Oct. |
+
+### 🔶 In progress
+- **C3 part 2 (20 Oct, ~1.5 h):** "email already in use" message, verification email in Chinese for Chinese-mode users, sender name in the email template, M2 "profiles listed", full test incl. Chinese mode.
+
+### 📊 Progress
+**About 40% of the 🅰 minimum-viable checklist is done** (C1, C2, C5, S1 and half of C3, out of 13 items). That's a count of items, not hours: what's left includes the two biggest ones (store prep, privacy policy). **About 3.5 build days remain for 🅰** (~28 h).
 
 ### ⬜ Not started
-C3, C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy policy and terms (new, see below)**, H2–H5, M1–M3, P1–P4, U1–U5, roommate empty state, store builds and listings.
+C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy policy and terms (new, see below)**, H2–H5, M1–M3, P1–P4, U1–U5, roommate empty state, store builds and listings.
 
 > ⚠️ **Budget Buddy doesn't work yet** (corrected 15 Oct). The project is on the free **Spark** plan and the `chat` Cloud Function has **never been deployed**, so the app can only show "I couldn't connect right now". The code is ready; C6 is the deploy.
 
@@ -43,7 +50,7 @@ C3, C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy pol
 | Item | Time | Prerequisites | Risk if skipped | Business impact |
 |---|---|---|---|---|
 | **N1** Privacy policy + terms, linked from Signup and Settings | 4–6 h (draft + hosting + in-app links) | **Client:** legal entity / data controller name, contact email. Ideally a short legal review. | **Store rejection** (both stores). UK GDPR breach (ICO complaints, fines). | You can't publish at all without it. |
-| **C3** Verified email before seeing contact details | 3–5 h | Copy **live** rules from the console first (they may differ from `firestore.rules`) | Anyone with a throwaway email can **collect every student's WhatsApp number**. Personal data breach, reputational damage. | Trust is the product for a roommate app. One "my number got scraped" post ends it. |
+| **C3** Verified email before seeing contact details | ✅ part 1 done · part 2 ~1.5 h | Live rules ✅ now match `firestore.rules` | Anyone with a throwaway email can **collect every student's WhatsApp number**. Personal data breach, reputational damage. | Trust is the product for a roommate app. One "my number got scraped" post ends it. |
 | **C4** Report + block on roommate profiles | 4–6 h | C3 (same rules work); **who reviews reports?** (client decision) | **App Store rejection** under guideline 1.2 (user-generated content must have report, block and contact). Harassment with no recourse. | Rejection costs 1–3 days per resubmission. |
 | **C6** First deploy of Budget Buddy (after C3, before C4) | ~1 h + phone test | **Blaze upgrade** (card), a Gemini key from AI Studio, `firebase-tools` ✅ installed and logged in | Budget Buddy is a dead screen: every message shows "I couldn't connect" | A broken feature in the demo and at launch. Alternative: hide Budget Buddy for V1 (P1). |
 | **P1** Hide Tutors, Housekeeper, Jobs | 1 h | Client sign-off on V1 scope | Launching 3 empty or unvetted marketplaces. **Housekeeper = unvetted strangers in students' homes** (safety and liability). | A smaller, solid V1 makes a better first impression |
@@ -54,7 +61,7 @@ C3, C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy pol
 |---|---|---|---|---|
 | **H2** Per-user rate limit on `chat` | 2–3 h | C6 done (do straight after it) | One user (or script) can burn the Gemini quota: **Budget Buddy breaks for everyone**, or the bill spikes on the paid tier | Feature outage in launch week |
 | **H3** Ask for notification permission at the first exam, not on first launch | 1 h | — | iOS asks **once**. If students decline on a cold start, exam reminders are dead for good. | The "we'll remind you" promise on the exam screen fails |
-| **H4** Lock tutor applications in the rules | 1 h | P1 decision | **Hiding the screen doesn't close the database.** Anyone can still write unlimited junk to `tutors`. | Cost / abuse vector |
+| **H4** Lock tutor applications in the rules | ~0.5 h left | P1 decision | *Partly done by S1:* applications can only be created as `pending` and nobody can self-approve. Still open: field and size checks, so an account can still write large junk applications. | Cost / abuse vector |
 | **H5** Cancel exam reminders when an exam is deleted | 1–2 h | — | "Your exam is tomorrow" for exams that were removed | Looks broken, erodes trust |
 | **M1** Edit / remove my roommate profile | 2 h | — | Students can't take their number down once they've found a room. **GDPR** expects easy removal. | Support requests; privacy complaints |
 | **Roommate empty state** "Be the first to post…" | 1 h | — | Empty Find tab at launch | First impression (section 4, empty app) |
@@ -78,9 +85,9 @@ C3, C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy pol
 ## 3. Realistic launch timeline
 
 ### 🅰 Minimum viable: "safe to put in front of real students"
-**About 3.5–4.5 build days** + store review
+**About 3.5 build days left** (19 Oct) + store review
 
-N1 · N2 · C3 · C4 · C6 · P1 · H3 · H4 · store prep
+C1 ✅ · C2 ✅ · C5 ✅ · S1 ✅ · C3 (½) · C4 · C6 · N1 · N2 · P1 · H3 · H4 · store prep
 
 - ✅ Legal minimum met, no known privacy hole, honest content, store-compliant.
 - ❌ Empty roommate tab, generic onboarding, free-text university, no crash reporting.
@@ -118,7 +125,7 @@ Everything in 🅱, plus P2 · P3 · P4 · U4–U5 · M3 · full Chinese review 
 | Risk | Detail | Mitigation |
 |---|---|---|
 | **UK GDPR: privacy notice** | No notice of what's collected, why, how long, who it's shared with (Google/Gemini, Firebase) | N1 |
-| **UK GDPR: contact details exposed** | Roommate WhatsApp numbers and emails readable by any account | C3; plus a clear "this will be visible to other students" note on the post form |
+| **UK GDPR: contact details exposed** | Roommate WhatsApp numbers and emails were readable by anyone | ✅ S1 + C3 part 1 (verified accounts only); plus a clear "this will be visible to other students" note on the post form |
 | **UK GDPR: right to erasure** | Account deletion exists ✅, but you can't remove a roommate post alone (M1), and tutor applications survive deletion (M3) | M1, M3 |
 | **ICO data protection fee** | Most UK organisations processing personal data must pay a yearly fee (around £40–60 for small ones) unless exempt | Client takes the ICO's online self-assessment |
 | **AI data handling** | Budget Buddy chats are sent to Google. **On Gemini's free tier, Google may use the content to improve its products**, and Google's terms have at times restricted free-tier use for UK users. *I couldn't confirm the current terms from here.* | Check the Gemini API terms; use the paid tier if required; disclose in the privacy policy |
@@ -129,7 +136,7 @@ Everything in 🅱, plus P2 · P3 · P4 · U4–U5 · M3 · full Chinese review 
 ### 🛠️ Technical risks
 | Risk | Likelihood | Mitigation |
 |---|---|---|
-| Live Firestore rules differ from `firestore.rules` (published via the console) | Medium | Compare before C3 |
+| Live Firestore rules differ from `firestore.rules` (published via the console) | ✅ Resolved 19 Oct (they did: the live ones were wide open) | Always publish the whole repo file; keep them in sync |
 | A plain `firebase deploy` overwrites the console rules | High if someone runs it | Always use `--only functions:chat`. It's in the TODO. |
 | Cloud Functions **Node 20** runtime being retired | Medium | Bump to Node 22 if the deploy warns |
 | Production build behaves differently from Expo Go | Medium | N3 early |
@@ -220,7 +227,7 @@ Everything in 🅱, plus P2 · P3 · P4 · U4–U5 · M3 · full Chinese review 
 
 ## Appendix: C6, first deploy of Budget Buddy (plan only, not started)
 
-**When:** Oct 18-19, after C3 and before C4, so Budget Buddy works in the Oct 23 client demo (skip it in the demo if C6 slips). **About 1 hour** plus the phone test.
+**When:** Wed 22 Oct with C4, so Budget Buddy works in the Oct 23 client demo (skip it in the demo if C6 slips). **About 1 hour** plus the phone test.
 
 **Why it's small:** the secure setup already exists. The app calls the `chat` Cloud Function (`functions/index.js`), which holds the prompt and reads the Gemini key from a server-side secret. The key is never in the app. It has just never been deployed.
 
