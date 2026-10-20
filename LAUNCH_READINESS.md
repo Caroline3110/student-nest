@@ -20,15 +20,16 @@ Estimates are **focused build time with Claude Code**, plus your phone testing. 
 | **C5 batch 5** | Budget Buddy prompt: no exact prices, discounts or fixed sticker times stated as fact; rough ranges first, then UNiDAYS / Student Beans. *Prompt only. It reaches students with the C6 deploy.* |
 | **S1** Database lockdown (19 Oct, console) | The live rules were wide open: **anyone, even without an account, could read every roommate's WhatsApp and email and edit or delete any profile**; any account could approve itself as a tutor or add housekeepers. Published the repo's rules: sign-in required everywhere, owners only edit their own data, only admins approve tutors or add housekeepers. Checked from outside: anonymous reads now refused. |
 | **C3 part 1** | Verification email sent at signup. Anyone signed in can browse roommates, but **contacting or posting needs a verified email** (Resend / "I've verified" prompt). WhatsApp and email moved to a separate doc only verified students can read. Old test posts deleted. Phone-tested 19 Oct. |
+| **C3 part 2** (20 Oct) | "Email already in use" offers Sign in with the email filled in; all Firebase emails follow the app language (EN/ZH); sender name "Student Nest"; M2 counts translated. Phone-tested in both languages. |
 
 ### 🔶 In progress
-- **C3 part 2 (20 Oct, ~1.5 h):** "email already in use" message, verification email in Chinese for Chinese-mode users, sender name in the email template, M2 "profiles listed", full test incl. Chinese mode.
+- **C4 report and block (20 Oct).** V1 moderation: reports go to Firestore and you check the console within 24 h, until the client decides who owns it.
 
 ### 📊 Progress
-**About 40% of the 🅰 minimum-viable checklist is done** (C1, C2, C5, S1 and half of C3, out of 13 items). That's a count of items, not hours: what's left includes the two biggest ones (store prep, privacy policy). **About 3.5 build days remain for 🅰** (~28 h).
+**About 40% of the 🅰 minimum-viable checklist is done** (C1, C2, C5, S1 and C3: 5 of 13 items). That's a count of items, not hours: what's left includes the two biggest ones (store prep, privacy policy). **About 3 build days remain for 🅰** (~26 h).
 
 ### ⬜ Not started
-C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy policy and terms (new, see below)**, H2–H5, M1–M3, P1–P4, U1–U5, roommate empty state, store builds and listings.
+**C6 (first deploy of Budget Buddy, new, see below)**, the **privacy policy and terms (new, see below)**, H2–H5, M1, M3, P1–P4, U1–U5, roommate empty state, store builds and listings.
 
 > ⚠️ **Budget Buddy doesn't work yet** (corrected 15 Oct). The project is on the free **Spark** plan and the `chat` Cloud Function has **never been deployed**, so the app can only show "I couldn't connect right now". The code is ready; C6 is the deploy.
 
@@ -50,7 +51,7 @@ C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy policy 
 | Item | Time | Prerequisites | Risk if skipped | Business impact |
 |---|---|---|---|---|
 | **N1** Privacy policy + terms, linked from Signup and Settings | 4–6 h (draft + hosting + in-app links) | **Client:** legal entity / data controller name, contact email. Ideally a short legal review. | **Store rejection** (both stores). UK GDPR breach (ICO complaints, fines). | You can't publish at all without it. |
-| **C3** Verified email before seeing contact details | ✅ part 1 done · part 2 ~1.5 h | Live rules ✅ now match `firestore.rules` | Anyone with a throwaway email can **collect every student's WhatsApp number**. Personal data breach, reputational damage. | Trust is the product for a roommate app. One "my number got scraped" post ends it. |
+| **C3** Verified email before seeing contact details | ✅ done (19–20 Oct) | Live rules ✅ now match `firestore.rules` | Anyone with a throwaway email can **collect every student's WhatsApp number**. Personal data breach, reputational damage. | Trust is the product for a roommate app. One "my number got scraped" post ends it. |
 | **C4** Report + block on roommate profiles | 4–6 h | C3 (same rules work); **who reviews reports?** (client decision) | **App Store rejection** under guideline 1.2 (user-generated content must have report, block and contact). Harassment with no recourse. | Rejection costs 1–3 days per resubmission. |
 | **C6** First deploy of Budget Buddy (after C3, before C4) | ~1 h + phone test | **Blaze upgrade** (card), a Gemini key from AI Studio, `firebase-tools` ✅ installed and logged in | Budget Buddy is a dead screen: every message shows "I couldn't connect" | A broken feature in the demo and at launch. Alternative: hide Budget Buddy for V1 (P1). |
 | **P1** Hide Tutors, Housekeeper, Jobs | 1 h | Client sign-off on V1 scope | Launching 3 empty or unvetted marketplaces. **Housekeeper = unvetted strangers in students' homes** (safety and liability). | A smaller, solid V1 makes a better first impression |
@@ -71,7 +72,7 @@ C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy policy 
 ### 🟡 Medium: fine to follow shortly after launch
 | Item | Time | Risk if skipped |
 |---|---|---|
-| **M2** Untranslated text ("profiles listed", "scheduled") | 0.5 h | Chinese users see English in two places |
+| **M2** Untranslated text ("profiles listed", "scheduled") | ✅ done 20 Oct | — |
 | **M3** Delete tutor applications on account deletion | 1 h | GDPR gap (moot if tutors are hidden and locked) |
 | **U1–U3** London uni list, pick uni in onboarding (merge steps 2+3), area filter | 6–8 h | Free-text unis make filtering useless. That's core to the "across London" positioning, so **promote to High if the client sells that USP at launch.** |
 | **U4–U5** "More filters" (uni), prompt existing users to pick their uni | 3–4 h | — |
@@ -87,7 +88,7 @@ C4, **C6 (first deploy of Budget Buddy, new, see below)**, the **privacy policy 
 ### 🅰 Minimum viable: "safe to put in front of real students"
 **About 3.5 build days left** (19 Oct) + store review
 
-C1 ✅ · C2 ✅ · C5 ✅ · S1 ✅ · C3 (½) · C4 · C6 · N1 · N2 · P1 · H3 · H4 · store prep
+C1 ✅ · C2 ✅ · C5 ✅ · S1 ✅ · C3 ✅ · C4 · C6 · N1 · N2 · P1 · H3 · H4 · store prep
 
 - ✅ Legal minimum met, no known privacy hole, honest content, store-compliant.
 - ❌ Empty roommate tab, generic onboarding, free-text university, no crash reporting.

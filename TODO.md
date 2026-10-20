@@ -5,12 +5,14 @@ Working rules: plan first, one fix or batch per commit, test on a phone before m
 ## Schedule to the client meeting (updated 19 Oct)
 - Tue 20: C3 part 2 · Wed 21: C4 + C6 (Blaze + Budget Buddy deploy) · Thu 22: prep, then client meeting
 
-## Next session: C3 part 2
-- "Email already in use": point to Sign in / Forgot password.
-- Send the verification email in Chinese for Chinese-mode users (`auth.languageCode`).
-- Console: sender name "Student Nest" in Authentication → Templates (verification + password reset).
-- M2: "profiles listed" untranslated on Roommates.
-- Full phone test incl. Chinese mode, then commit "C3 part 2".
+## Next session: C4 (report and block on roommate profiles)
+V1 moderation: reports saved to Firestore, founder checks the console within 24 h.
+Temporary until the client decides who owns moderation (ask Thu 22 Oct).
+
+## Done 20 Oct
+- C3 part 2: "email already in use" offers Sign in with the email filled in; verification,
+  resend and password-reset emails follow the app language; sender name "Student Nest" set.
+- M2: "profiles listed" and "scheduled" translated.
 
 ## Done 19 Oct
 - S1: live Firestore rules were wide open (anyone could read roommate contact details without an
@@ -26,7 +28,6 @@ Later: London-aware Budget Buddy (Oyster, Zone 1-2 travel, London rent).
 ## Still to do before launch
 
 ### Critical
-- [ ] C3 part 2 (part 1 done 19 Oct). Rules changes go through the console.
 - [ ] C4: report and block on roommate profiles (App Store guideline 1.2).
 - [ ] C6 (Wed 21 Oct, with C4): first deploy of Budget Buddy. The project is on Spark and `chat` has
       never been deployed, so Budget Buddy can't answer yet. Needs Blaze + a Gemini key secret.
@@ -40,7 +41,6 @@ Later: London-aware Budget Buddy (Oyster, Zone 1-2 travel, London rent).
 
 ### Medium
 - [ ] M1: let students edit or remove their own roommate profile.
-- [ ] M2: untranslated text ("profiles listed" on Roommates, "scheduled" on Exams).
 - [ ] M3: delete pending tutor applications when an account is deleted.
 
 ### Product
