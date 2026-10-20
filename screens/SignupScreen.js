@@ -28,9 +28,15 @@ export default function SignupScreen({ navigation }) {
         console.error('Verification email failed:', err.code));
     } catch (error) {
       setLoading(false);
+      if (error.code === 'auth/email-already-in-use') {
+        Alert.alert(t('auth.signupFailed'), t('auth.emailInUse'), [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('auth.signIn'), onPress: () => navigation.navigate('Login', { email: email.trim() }) },
+        ]);
+        return;
+      }
       let msg = t('auth.signupFailedGeneric');
-      if (error.code === 'auth/email-already-in-use') msg = t('auth.emailInUse');
-      else if (error.code === 'auth/invalid-email') msg = t('auth.invalidEmail');
+      if (error.code === 'auth/invalid-email') msg = t('auth.invalidEmail');
       else if (error.code === 'auth/weak-password') msg = t('auth.weakPassword');
       Alert.alert(t('auth.signupFailed'), msg);
     }

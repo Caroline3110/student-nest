@@ -175,7 +175,7 @@ export default function ExamsScreen({ navigation }) {
           <Text style={styles.backButtonText}>← {t('common.back')}</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('study.exams')}</Text>
-        <Text style={styles.headerSubtitle}>{exams.length} scheduled</Text>
+        <Text style={styles.headerSubtitle}>{t('exams.scheduled', { count: exams.length })}</Text>
       </View>
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}

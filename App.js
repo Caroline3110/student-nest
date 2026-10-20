@@ -78,9 +78,17 @@ export default function App() {
   );
 }
 
+// Firebase's own translations for the verification and password-reset emails.
+const EMAIL_LANGUAGES = { en: 'en', zh: 'zh-CN' };
+
 function AppStack({ signedIn }) {
   const profile = useProfile();
   const { lang, setLang } = useLanguage();
+
+  // Every email Firebase sends follows the app's language.
+  useEffect(() => {
+    auth.languageCode = EMAIL_LANGUAGES[lang] || 'en';
+  }, [lang]);
 
   // Use the language saved on the profile when signing in on a new device.
   useEffect(() => {

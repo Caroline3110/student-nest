@@ -43,7 +43,7 @@ export default {
     invalidEmail: '邮箱地址无效',
     userNotFound: '没有找到使用此邮箱的账户',
     wrongPassword: '邮箱或密码错误',
-    emailInUse: '此邮箱已被注册',
+    emailInUse: '此邮箱已有账号。请直接登录；如果忘记密码，可以使用"忘记密码"。',
     weakPassword: '密码强度太弱',
     passwordsDontMatch: '两次输入的密码不一致',
     passwordTooShort: '密码至少需要 6 个字符',
@@ -341,6 +341,7 @@ export default {
     saveFailed: '无法保存任务',
   },
   exams: {
+    scheduled: '已安排 {{count}} 场考试',
     reminderTitle: '明天考 {{subject}}！',
     reminderBody: '考试时间 {{time}}，抓紧复习！',
     missingFields: '信息不完整',
@@ -529,6 +530,8 @@ export default {
     contactRequired: '需要联系方式',
     addContact: '请填写 WhatsApp 号码或邮箱，方便别人联系你。',
     noContact: '这位同学还没有填写联系方式。',
+    listed: '已发布 {{count}} 份资料',
+    listedOne: '已发布 1 份资料',
     contactFailed: '无法加载联系方式，请重试。',
   },
   verify: {

@@ -43,7 +43,7 @@ export default {
     invalidEmail: 'Invalid email address',
     userNotFound: 'No account found with this email',
     wrongPassword: 'Incorrect email or password',
-    emailInUse: 'This email is already registered',
+    emailInUse: "This email already has an account. Sign in instead, or use Forgot password if you don't remember it.",
     weakPassword: 'Password is too weak',
     passwordsDontMatch: 'Passwords do not match',
     passwordTooShort: 'Password must be at least 6 characters',
@@ -341,6 +341,7 @@ export default {
     saveFailed: 'Could not save task',
   },
   exams: {
+    scheduled: '{{count}} scheduled',
     reminderTitle: '{{subject}} exam tomorrow!',
     reminderBody: 'Exam at {{time}}. Get studying!',
     missingFields: 'Missing fields',
@@ -529,6 +530,8 @@ export default {
     contactRequired: 'Contact required',
     addContact: 'Please add a WhatsApp number or email so others can reach you.',
     noContact: "This student hasn't added contact details.",
+    listed: '{{count}} profiles listed',
+    listedOne: '1 profile listed',
     contactFailed: "Couldn't load contact details. Please try again.",
   },
   verify: {

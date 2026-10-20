@@ -221,7 +221,7 @@ export default function RoommateFinderScreen({ navigation }) {
           <Text style={styles.backText}>← {t('common.back')}</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('roommates.title')}</Text>
-        <Text style={styles.headerSub}>{roommates.length} profile{roommates.length !== 1 ? 's' : ''} listed</Text>
+        <Text style={styles.headerSub}>{t(roommates.length === 1 ? 'roommates.listedOne' : 'roommates.listed', { count: roommates.length })}</Text>
       </View>
 
       {/* Tabs */}

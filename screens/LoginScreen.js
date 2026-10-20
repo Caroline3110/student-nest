@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View, Alert, StyleSheet } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -8,11 +8,16 @@ import AuthLayout, { authStyles as s } from '../components/AuthLayout';
 import AuthInput from '../components/AuthInput';
 import PressableScale from '../components/PressableScale';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({ navigation, route }) {
   const t = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Filled in when Signup sends someone here because the email already has an account.
+  useEffect(() => {
+    if (route.params?.email) setEmail(route.params.email);
+  }, [route.params?.email]);
 
   const handleLogin = async () => {
     if (!email || !password) { Alert.alert(t('common.error'), t('common.fillAllFields')); return; }

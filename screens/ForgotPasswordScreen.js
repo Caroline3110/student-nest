@@ -8,11 +8,8 @@ import AuthLayout, { authStyles as s } from '../components/AuthLayout';
 import AuthInput from '../components/AuthInput';
 import PressableScale from '../components/PressableScale';
 
-// Firebase language codes for the reset email, keyed by app language.
-const EMAIL_LANGUAGES = { en: 'en', zh: 'zh-CN' };
-
 export default function ForgotPasswordScreen({ navigation, route }) {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [email, setEmail] = useState(route.params?.email || '');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -21,7 +18,6 @@ export default function ForgotPasswordScreen({ navigation, route }) {
     const address = email.trim();
     if (!address) { Alert.alert(t('common.error'), t('common.fillAllFields')); return; }
     setLoading(true);
-    auth.languageCode = EMAIL_LANGUAGES[lang] || 'en';
     try {
       await sendPasswordResetEmail(auth, address);
       setSent(true);
