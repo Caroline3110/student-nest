@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   ScrollView, Alert, Linking, KeyboardAvoidingView,
-  Platform, ActivityIndicator,
+  Platform, ActivityIndicator, Modal,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../constants/Colors';
 import { useProfile } from '../hooks/useProfile';
 import { useT } from '../i18n';
 import { auth, db } from '../firebase';
-import { collection, doc, getDoc, onSnapshot, query, orderBy, writeBatch } from 'firebase/firestore';
+import {
+  collection, doc, getDoc, onSnapshot, query, orderBy, writeBatch, setDoc, serverTimestamp,
+} from 'firebase/firestore';
 import { sendEmailVerification } from 'firebase/auth';
 
 const BUDGET_FILTERS = ['All', 'Under £600', '£600–£900', '£900–£1200', '£1200+'];
@@ -19,13 +21,21 @@ const LIFESTYLE_OPTIONS = [
   'Pet-friendly', 'No pets', 'Early bird', 'Night owl', 'Tidy', 'Relaxed',
 ];
 
+// Must match the reasons allowed in firestore.rules (/reports).
+const REPORT_REASONS = ['fake', 'offensive', 'spam', 'other'];
+
 const initials = (name) =>
   (name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
 export default function RoommateFinderScreen({ navigation }) {
   const t = useT();
+  const insets = useSafeAreaInsets();
+  const myUid = auth.currentUser?.uid;
   const [activeTab, setActiveTab] = useState('find');
   const [roommates, setRoomates] = useState([]);
+  const [blocked, setBlocked] = useState(new Set());
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportSent, setReportSent] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [budgetFilter, setBudgetFilter] = useState('All');
@@ -59,6 +69,16 @@ export default function RoommateFinderScreen({ navigation }) {
     return unsub;
   }, []);
 
+  // Students this user has blocked, kept at /users/{uid}/blocked/{theirUid}.
+  useEffect(() => {
+    if (!myUid) return;
+    return onSnapshot(collection(db, 'users', myUid, 'blocked'),
+      snap => setBlocked(new Set(snap.docs.map(d => d.id))),
+      err => console.error('Error loading blocked list:', err));
+  }, [myUid]);
+
+  const visible = roommates.filter(r => !blocked.has(r.id));
+
   const toggleLifestyle = (option) => {
     setLifestyle(prev =>
       prev.includes(option) ? prev.filter(o => o !== option) : [...prev, option]
@@ -75,7 +95,7 @@ export default function RoommateFinderScreen({ navigation }) {
     return true;
   };
 
-  const filtered = roommates.filter(r => {
+  const filtered = visible.filter(r => {
     const q = search.toLowerCase();
     const matchSearch = !q ||
       r.name?.toLowerCase().includes(q) ||
@@ -181,14 +201,24 @@ export default function RoommateFinderScreen({ navigation }) {
       Alert.alert(t('tutors.couldNotOpen'), t('tutors.noApp')));
   };
 
-  const contactRoommate = async (r) => {
+  const contactRoommate = async (r, retried = false) => {
     let contact;
     try {
       const snap = await getDoc(doc(db, 'roommates', r.id, 'private', 'contact'));
       contact = snap.data();
     } catch (err) {
-      if (err.code === 'permission-denied') askToVerify(() => contactRoommate(r));
-      else Alert.alert(t('common.error'), t('roommates.contactFailed'));
+      if (err.code !== 'permission-denied') {
+        Alert.alert(t('common.error'), t('roommates.contactFailed'));
+        return;
+      }
+      // Refused: either the login token predates verification (refresh once
+      // and retry) or this student has blocked them.
+      if (!retried) {
+        await auth.currentUser.getIdToken(true).catch(() => {});
+        contactRoommate(r, true);
+      } else {
+        Alert.alert(t('tutors.contactName', { name: r.name }), t('safety.unavailable'));
+      }
       return;
     }
     if (!contact?.whatsapp && !contact?.email) {
@@ -212,6 +242,53 @@ export default function RoommateFinderScreen({ navigation }) {
     Alert.alert(t('tutors.contactName', { name: r.name }), t('tutors.howReach'), options);
   };
 
+  const block = async (r) => {
+    try {
+      await setDoc(doc(db, 'users', myUid, 'blocked', r.id), {
+        name: r.name || '', createdAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error('Block error:', err);
+      Alert.alert(t('common.error'), t('common.tryAgain'));
+    }
+  };
+
+  const confirmBlock = (r) => {
+    Alert.alert(t('safety.blockTitle', { name: r.name }), t('safety.blockBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('safety.block'), style: 'destructive', onPress: () => block(r) },
+    ]);
+  };
+
+  const closeReport = () => { setReportTarget(null); setReportSent(false); };
+
+  const sendReport = async (reason) => {
+    const r = reportTarget;
+    try {
+      await setDoc(doc(db, 'reports', `${myUid}_${r.id}`), {
+        reporterUid: myUid, targetUid: r.id, reason, createdAt: serverTimestamp(),
+      });
+    } catch (err) {
+      // Reporting the same profile twice is refused by the rules; the first
+      // report still stands, so thank them either way.
+      if (err.code !== 'permission-denied') {
+        console.error('Report error:', err);
+        closeReport();
+        Alert.alert(t('common.error'), t('common.tryAgain'));
+        return;
+      }
+    }
+    setReportSent(true);
+  };
+
+  const openSafetyMenu = (r) => {
+    Alert.alert(r.name, undefined, [
+      { text: t('safety.report'), onPress: () => setReportTarget(r) },
+      { text: t('safety.block'), style: 'destructive', onPress: () => confirmBlock(r) },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
 
@@ -221,7 +298,7 @@ export default function RoommateFinderScreen({ navigation }) {
           <Text style={styles.backText}>← {t('common.back')}</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('roommates.title')}</Text>
-        <Text style={styles.headerSub}>{t(roommates.length === 1 ? 'roommates.listedOne' : 'roommates.listed', { count: roommates.length })}</Text>
+        <Text style={styles.headerSub}>{t(visible.length === 1 ? 'roommates.listedOne' : 'roommates.listed', { count: visible.length })}</Text>
       </View>
 
       {/* Tabs */}
@@ -273,7 +350,7 @@ export default function RoommateFinderScreen({ navigation }) {
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>{t('roommates.noneFound')}</Text>
               <Text style={styles.emptySub}>
-                {roommates.length === 0
+                {visible.length === 0
                   ? t('roommates.noneYet')
                   : t('roommates.tryDifferent')}
               </Text>
@@ -298,6 +375,16 @@ export default function RoommateFinderScreen({ navigation }) {
                     <View style={styles.budgetBadge}>
                       <Text style={styles.budgetText}>£{r.budget}{t('roommates.perMonth')}</Text>
                     </View>
+                  )}
+                  {r.id !== myUid && (
+                    <TouchableOpacity
+                      style={styles.moreBtn}
+                      onPress={() => openSafetyMenu(r)}
+                      hitSlop={10}
+                      accessibilityLabel={t('safety.menuLabel')}
+                    >
+                      <Text style={styles.moreText}>⋯</Text>
+                    </TouchableOpacity>
                   )}
                 </View>
 
@@ -457,6 +544,43 @@ export default function RoommateFinderScreen({ navigation }) {
         </KeyboardAvoidingView>
       )}
 
+      {/* Report: reasons, then thanks + "also block?" in the same sheet.
+          (A sheet, since Android alerts only fit three buttons.) */}
+      <Modal visible={!!reportTarget} transparent animationType="slide" onRequestClose={closeReport}>
+        <View style={styles.overlay}>
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+            {reportSent ? (
+              <>
+                <Text style={styles.sheetTitle}>{t('safety.reportedTitle')}</Text>
+                <Text style={styles.sheetSub}>{t('safety.reported', { name: reportTarget?.name })}</Text>
+                <TouchableOpacity
+                  style={styles.reasonBtn}
+                  onPress={() => { block(reportTarget); closeReport(); }}
+                >
+                  <Text style={[styles.reasonText, styles.blockText]}>{t('safety.block')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.sheetCancel} onPress={closeReport}>
+                  <Text style={styles.sheetCancelText}>{t('safety.notNow')}</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={styles.sheetTitle}>{t('safety.reportTitle', { name: reportTarget?.name })}</Text>
+                <Text style={styles.sheetSub}>{t('safety.reportWhy')}</Text>
+                {REPORT_REASONS.map(reason => (
+                  <TouchableOpacity key={reason} style={styles.reasonBtn} onPress={() => sendReport(reason)}>
+                    <Text style={styles.reasonText}>{t(`safety.reasons.${reason}`)}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity style={styles.sheetCancel} onPress={closeReport}>
+                  <Text style={styles.sheetCancelText}>{t('common.cancel')}</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -532,6 +656,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 5,
   },
   budgetText: { fontSize: 13, fontWeight: '700', color: Colors.primary },
+  moreBtn: { marginLeft: 8, paddingHorizontal: 4 },
+  moreText: { fontSize: 20, fontWeight: '700', color: Colors.textLight, lineHeight: 22 },
+
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    padding: 20,
+  },
+  sheetTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
+  sheetSub: { fontSize: 13, color: Colors.textLight, marginBottom: 14 },
+  reasonBtn: {
+    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: Colors.border,
+  },
+  reasonText: { fontSize: 15, color: Colors.textPrimary },
+  blockText: { color: Colors.error, fontWeight: '600' },
+  sheetCancel: { paddingVertical: 14, alignItems: 'center', marginTop: 6 },
+  sheetCancelText: { fontSize: 15, fontWeight: '600', color: Colors.textSecondary },
 
   infoRow: { flexDirection: 'row', marginBottom: 6 },
   infoLabel: { fontSize: 12, fontWeight: '600', color: Colors.textMuted, width: 54 },

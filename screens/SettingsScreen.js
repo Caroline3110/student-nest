@@ -14,7 +14,7 @@ import { LANGUAGES, useLanguage } from '../i18n';
 import { useProfile, saveProfile } from '../hooks/useProfile';
 import { FormField } from '../components/FormField';
 
-const USER_SUBCOLLECTIONS = ['tasks', 'exams', 'timetable'];
+const USER_SUBCOLLECTIONS = ['tasks', 'exams', 'timetable', 'blocked'];
 
 const deleteUserData = async (uid) => {
   for (const name of USER_SUBCOLLECTIONS) {
