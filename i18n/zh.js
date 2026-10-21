@@ -60,19 +60,9 @@ export default {
     networkError: '没有网络连接，请检查网络后重试。',
   },
   welcome: {
-    headline: '你的留学生活，',
-    headlineAccent: '轻松搞定 ✨',
-    sub: '学习、预算、住房等，一个应用全搞定。',
-    haveAccount: '我已有账户',
-    socialProof: '由伦敦学生打造，专为伦敦学生服务 💙',
-    features: {
-      study: '学习',
-      budget: '预算',
-      housing: '住房',
-      roommates: '室友',
-      jobs: '兼职',
-      wellbeing: 'MindNest',
-    },
+    tagline: '你的伦敦留学生活，一站搞定。',
+    getStarted: '开始使用',
+    footer: '学习  •  生活  •  社交  •  成长',
   },
   setup: {
     step: '第 {{current}} 步，共 {{total}} 步',

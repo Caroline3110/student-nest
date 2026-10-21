@@ -1,184 +1,192 @@
-import { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Colors from '../constants/Colors';
-import { useT } from '../i18n';
-import { LanguageToggle } from '../components/FormField';
+import { StatusBar } from 'expo-status-bar';
+import { useIsFocused } from '@react-navigation/native';
+import { useT, useLanguage } from '../i18n';
 import FadeIn from '../components/FadeIn';
-import FloatingBubbles from '../components/FloatingBubbles';
 import PressableScale from '../components/PressableScale';
-import useReducedMotion from '../hooks/useReducedMotion';
 
-const FEATURES = [
-  { key: 'study',     emoji: '📚', color: Colors.playSky },
-  { key: 'budget',    emoji: '💷', color: Colors.playMint },
-  { key: 'housing',   emoji: '🏠', color: Colors.playPeach },
-  { key: 'roommates', emoji: '🤝', color: Colors.playYellow },
-  { key: 'jobs',      emoji: '💼', color: Colors.playLilac },
-  { key: 'wellbeing', emoji: '🧘', color: Colors.playSky },
+const RED = '#8B1A28';
+const SERIF = Platform.select({ ios: 'Georgia', default: 'serif' });
+
+// Short labels for the pill; LANGUAGES in i18n has the long ones used in Settings.
+const PILL = [
+  { code: 'en', label: 'English' },
+  { code: 'zh', label: '中文' },
 ];
 
-// First screen signed-out users see: pick Create account or Log in.
+// First screen signed-out users see.
 export default function WelcomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const t = useT();
-  const reduceMotion = useReducedMotion();
-
-  // Logo springs in, then gives a little wobble.
-  const logoScale = useRef(new Animated.Value(0.6)).current;
-  const logoTilt = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const wobble = (toValue) =>
-      Animated.timing(logoTilt, { toValue, duration: 110, easing: Easing.inOut(Easing.quad), useNativeDriver: true });
-    const anim = Animated.sequence([
-      Animated.spring(logoScale, { toValue: 1, speed: 8, bounciness: 14, useNativeDriver: true }),
-      ...(reduceMotion ? [] : [wobble(-1), wobble(1), wobble(-0.5), wobble(0)]),
-    ]);
-    anim.start();
-    return () => anim.stop();
-  }, []);
-  const logoRotate = logoTilt.interpolate({ inputRange: [-1, 1], outputRange: ['-10deg', '10deg'] });
+  const { lang, setLang } = useLanguage();
+  // Welcome stays mounted under Login, so only ask for white status-bar text while it's on top.
+  const focused = useIsFocused();
 
   return (
     <View style={styles.root}>
+      {focused && <StatusBar style="light" />}
+      <Image
+        source={require('../assets/welcome-skyline.png')}
+        style={[styles.skyline, { bottom: insets.bottom + 175 }]}
+        resizeMode="contain"
+        accessibilityIgnoresInvertColors
+      />
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 20 }]}
+        contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 56, paddingBottom: insets.bottom + 16 }]}
         bounces={false}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.langRow}>
-          <LanguageToggle />
-        </View>
-
         <View style={styles.hero}>
-          <FloatingBubbles />
-          <Animated.View style={[styles.logo, { transform: [{ scale: logoScale }, { rotate: logoRotate }] }]}>
-            <Text style={styles.logoEmoji}>🏠</Text>
-          </Animated.View>
+          <FadeIn variant="pop">
+            <HouseMark />
+          </FadeIn>
+          <FadeIn delay={150}>
+            {/* The brand name isn't translated. */}
+            <Text style={styles.logo} accessibilityRole="header">student{'\n'}nest.</Text>
+          </FadeIn>
+          <FadeIn delay={300}>
+            <Text style={styles.tagline}>{t('welcome.tagline')}</Text>
+          </FadeIn>
         </View>
 
-        <View style={styles.content}>
-          <FadeIn delay={250}>
-            <Text style={styles.headline}>
-              {t('welcome.headline')}{'\n'}
-              <Text style={styles.headlineAccent}>{t('welcome.headlineAccent')}</Text>
-            </Text>
-          </FadeIn>
-          <FadeIn delay={350}>
-            <Text style={styles.sub}>{t('welcome.sub')}</Text>
-          </FadeIn>
-
-          <View style={styles.chips}>
-            {FEATURES.map((f, i) => (
-              <FadeIn key={f.key} delay={450 + i * 70} variant="pop">
-                <View style={[styles.chip, { backgroundColor: f.color }]}>
-                  <Text style={styles.chipEmoji}>{f.emoji}</Text>
-                  <Text style={styles.chipText}>{t(`welcome.features.${f.key}`)}</Text>
-                </View>
-              </FadeIn>
-            ))}
+        <FadeIn delay={450} style={styles.actions}>
+          <View style={styles.pill}>
+            {PILL.map(l => {
+              const active = lang === l.code;
+              return (
+                <Pressable
+                  key={l.code}
+                  style={({ pressed }) => [styles.pillOption, active && styles.pillOptionActive, pressed && { opacity: 0.8 }]}
+                  onPress={() => setLang(l.code)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                >
+                  <Text style={[styles.pillText, active && styles.pillTextActive]}>{l.label}</Text>
+                </Pressable>
+              );
+            })}
           </View>
-        </View>
 
-        <FadeIn delay={850} style={styles.actions}>
-          <PressableScale style={styles.primaryBtn} onPress={() => navigation.navigate('Signup')}>
-            <Text style={styles.primaryText}>{t('auth.createAccount')}  →</Text>
+          <PressableScale style={styles.button} onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.buttonText}>{t('welcome.getStarted')}  →</Text>
           </PressableScale>
-          <PressableScale style={styles.secondaryBtn} onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.secondaryText}>{t('welcome.haveAccount')}</Text>
-          </PressableScale>
-          <Text style={styles.socialProof}>{t('welcome.socialProof')}</Text>
+
+          <Text style={styles.footer}>{t('welcome.footer')}</Text>
         </FadeIn>
       </ScrollView>
     </View>
   );
 }
 
+// Outline house drawn with borders, since the app has no icon library:
+// a square showing only two edges, turned 45°, makes the roof.
+function HouseMark() {
+  return (
+    <View style={house.wrap}>
+      <View style={house.roof} />
+      <View style={house.body}>
+        <View style={house.door} />
+      </View>
+    </View>
+  );
+}
+
+const STROKE = 3.5;
+
+const house = StyleSheet.create({
+  wrap: { alignItems: 'center', paddingTop: 8, marginBottom: 22 },
+  roof: {
+    width: 36,
+    height: 36,
+    borderTopWidth: STROKE,
+    borderLeftWidth: STROKE,
+    borderColor: '#FFFFFF',
+    borderTopLeftRadius: 3,
+    transform: [{ rotate: '45deg' }],
+  },
+  body: {
+    width: 36,
+    height: 26,
+    marginTop: -25,
+    borderLeftWidth: STROKE,
+    borderRightWidth: STROKE,
+    borderBottomWidth: STROKE,
+    borderColor: '#FFFFFF',
+    borderBottomLeftRadius: 3,
+    borderBottomRightRadius: 3,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  door: {
+    width: 11,
+    height: 13,
+    borderWidth: STROKE,
+    borderBottomWidth: 0,
+    borderColor: '#FFFFFF',
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
+  },
+});
+
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.background },
-  scroll: { flexGrow: 1, paddingHorizontal: 24 },
-  langRow: { alignItems: 'flex-end' },
+  root: { flex: 1, backgroundColor: RED },
+  // Faint line drawing behind the content; wider than the screen, so the
+  // right side (St Paul's) is cropped and Big Ben and the Eye stay in view.
+  skyline: { position: 'absolute', left: -12, width: 690, height: 230, opacity: 0.35 },
+  scroll: { flexGrow: 1, paddingHorizontal: 24, justifyContent: 'space-between' },
 
-  hero: {
-    height: 220,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 4,
-  },
+  hero: { alignItems: 'center' },
   logo: {
-    width: 104,
-    height: 104,
-    borderRadius: 32,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    fontFamily: SERIF,
+    fontSize: 60,
+    lineHeight: 62,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    letterSpacing: -1,
   },
-  logoEmoji: { fontSize: 52 },
+  tagline: {
+    fontSize: 17,
+    lineHeight: 25,
+    color: 'rgba(255,255,255,0.88)',
+    textAlign: 'center',
+    marginTop: 18,
+    maxWidth: 270,
+  },
 
-  content: { flex: 1, paddingTop: 12 },
-  headline: {
-    fontSize: 38,
-    lineHeight: 44,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    letterSpacing: -1.2,
-  },
-  headlineAccent: { color: Colors.primary },
-  sub: {
-    fontSize: 16,
-    lineHeight: 23,
-    color: Colors.textLight,
-    marginTop: 12,
-  },
-  chips: {
+  actions: { marginTop: 48 },
+  pill: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 22,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+    padding: 4,
     borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
   },
-  chipEmoji: { fontSize: 15 },
-  chipText: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
+  pillOption: { flex: 1, paddingVertical: 14, borderRadius: 999, alignItems: 'center' },
+  pillOptionActive: { backgroundColor: '#FFFFFF' },
+  pillText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
+  pillTextActive: { color: '#1A1A1A', fontWeight: '700' },
 
-  actions: { marginTop: 28, gap: 12 },
-  primaryBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: 18,
+  button: {
+    marginTop: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
     paddingVertical: 18,
     alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.28,
-    shadowRadius: 14,
-    elevation: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  primaryText: { color: Colors.white, fontSize: 17, fontWeight: '800' },
-  secondaryBtn: {
-    backgroundColor: Colors.surface,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: Colors.border,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  secondaryText: { color: Colors.textPrimary, fontSize: 16, fontWeight: '700' },
-  socialProof: {
+  buttonText: { color: RED, fontSize: 17, fontWeight: '700' },
+  footer: {
     textAlign: 'center',
     fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textLight,
-    marginTop: 6,
+    color: 'rgba(255,255,255,0.75)',
+    letterSpacing: 0.3,
+    marginTop: 18,
   },
 });
