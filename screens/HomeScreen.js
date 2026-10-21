@@ -12,11 +12,8 @@ import { useProfile } from '../hooks/useProfile';
 
 const FEATURES = [
   { key: 'living', emoji: '🏠', route: 'Accommodation' },
-  { key: 'budget', emoji: '💰', route: 'BudgetTracker' },
   { key: 'study', emoji: '📚', route: 'StudyDashboard' },
-  { key: 'tutors', emoji: '🎓', route: 'TutorFinder' },
   { key: 'roommates', emoji: '🤝', route: 'RoommateFinder' },
-  { key: 'housekeeper', emoji: '✨', route: 'Housekeeper' },
   { key: 'jobs', emoji: '💼', route: 'PartTimeJobs' },
   { key: 'wellbeing', emoji: '🌿', route: 'Wellbeing' },
 ];
