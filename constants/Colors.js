@@ -41,4 +41,12 @@ export default {
   playMint: '#DCFCE7',
   playPeach: '#FFE4E6',
   shadow: '#000000',
+
+  // Warm palette for the welcome and sign-in screens.
+  brandDeep: '#8B1A28',
+  cream: '#FAF4EE',
+  creamBorder: '#EFE4DA',
+  blush: '#F3E1DA',
+  warmGrey: '#6B625C',
+  warmMuted: '#A39A93',
 };

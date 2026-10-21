@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Text, View, Alert } from 'react-native';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../firebase';
-import Colors from '../constants/Colors';
 import { useLanguage } from '../i18n';
 import AuthLayout, { authStyles as s } from '../components/AuthLayout';
 import AuthInput from '../components/AuthInput';
+import { MailIcon } from '../components/AuthIcons';
 import PressableScale from '../components/PressableScale';
 
 export default function ForgotPasswordScreen({ navigation, route }) {
@@ -40,7 +40,6 @@ export default function ForgotPasswordScreen({ navigation, route }) {
       <AuthLayout
         navigation={navigation}
         emoji="📬"
-        badgeColor={Colors.playMint}
         title={t('auth.resetSentTitle')}
         subtitle={t('auth.resetSentBody', { email: email.trim() })}
       >
@@ -55,13 +54,13 @@ export default function ForgotPasswordScreen({ navigation, route }) {
     <AuthLayout
       navigation={navigation}
       emoji="🔑"
-      badgeColor={Colors.playPeach}
       title={t('auth.resetTitle')}
       subtitle={t('auth.resetSub')}
     >
       <View style={s.form}>
         <AuthInput
           label={t('auth.email')}
+          icon={<MailIcon />}
           placeholder="you@example.com"
           value={email}
           onChangeText={setEmail}

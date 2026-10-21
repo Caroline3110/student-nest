@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Text, View, Alert } from 'react-native';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../firebase';
-import Colors from '../constants/Colors';
 import { useT } from '../i18n';
 import AuthLayout, { authStyles as s } from '../components/AuthLayout';
 import AuthInput from '../components/AuthInput';
+import { MailIcon, LockIcon } from '../components/AuthIcons';
 import PressableScale from '../components/PressableScale';
 
 export default function SignupScreen({ navigation }) {
@@ -47,13 +47,13 @@ export default function SignupScreen({ navigation }) {
     <AuthLayout
       navigation={navigation}
       emoji="🎉"
-      badgeColor={Colors.playLilac}
       title={t('auth.createAccount')}
       subtitle={t('auth.joinTagline')}
     >
       <View style={s.form}>
         <AuthInput
           label={t('auth.email')}
+          icon={<MailIcon />}
           placeholder="you@example.com"
           value={email}
           onChangeText={setEmail}
@@ -63,6 +63,7 @@ export default function SignupScreen({ navigation }) {
         />
         <AuthInput
           label={t('auth.password')}
+          icon={<LockIcon />}
           placeholder={t('auth.passwordHint')}
           value={password}
           onChangeText={setPassword}
@@ -70,6 +71,7 @@ export default function SignupScreen({ navigation }) {
         />
         <AuthInput
           label={t('auth.confirmPassword')}
+          icon={<LockIcon />}
           placeholder="••••••••"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
