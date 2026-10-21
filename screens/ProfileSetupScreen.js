@@ -10,6 +10,7 @@ import Colors from '../constants/Colors';
 import { useLanguage } from '../i18n';
 import { saveProfile } from '../hooks/useProfile';
 import { FormField, ChipSelect, LanguageToggle } from '../components/FormField';
+import PressableScale from '../components/PressableScale';
 
 export const YEAR_OPTIONS = ['year1', 'year2', 'year3', 'year4', 'postgrad'];
 
@@ -77,6 +78,7 @@ export default function ProfileSetupScreen() {
         <View style={styles.fields}>
           {step === 0 && (
             <FormField
+              style={styles.input}
               label={t('profile.name')}
               placeholder={t('profile.namePlaceholder')}
               value={form.name}
@@ -88,6 +90,7 @@ export default function ProfileSetupScreen() {
           {step === 1 && (
             <>
               <FormField
+                style={styles.input}
                 label={t('profile.university')}
                 placeholder={t('profile.universityPlaceholder')}
                 value={form.university}
@@ -95,6 +98,7 @@ export default function ProfileSetupScreen() {
                 maxLength={120}
               />
               <FormField
+                style={styles.input}
                 label={t('profile.campus')}
                 placeholder={t('profile.campusPlaceholder')}
                 value={form.campus}
@@ -106,6 +110,7 @@ export default function ProfileSetupScreen() {
           {step === 2 && (
             <>
               <FormField
+                style={styles.input}
                 label={t('profile.major')}
                 placeholder={t('profile.majorPlaceholder')}
                 value={form.major}
@@ -122,6 +127,7 @@ export default function ProfileSetupScreen() {
           )}
           {step === 3 && (
             <FormField
+              style={styles.input}
               label={t('profile.bio')}
               placeholder={t('profile.bioPlaceholder')}
               value={form.bio}
@@ -135,36 +141,47 @@ export default function ProfileSetupScreen() {
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-        <TouchableOpacity
+        <PressableScale
           style={[styles.button, (!canContinue || saving) && styles.buttonDisabled]}
           onPress={handleNext}
           disabled={!canContinue || saving}
-          activeOpacity={0.85}
         >
           <Text style={styles.buttonText}>
             {saving ? t('common.saving') : isLast ? t('setup.finish') : t('common.continue')}
           </Text>
-        </TouchableOpacity>
+        </PressableScale>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.background },
+  root: { flex: 1, backgroundColor: Colors.cream },
   top: { paddingHorizontal: 24 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  backText: { fontSize: 14, color: Colors.textLight, fontWeight: '500' },
+  backText: { fontSize: 14, color: Colors.warmGrey, fontWeight: '600' },
   progress: { flexDirection: 'row', gap: 6 },
-  progressBar: { flex: 1, height: 4, borderRadius: 2, backgroundColor: Colors.border },
-  progressBarActive: { backgroundColor: Colors.primary },
-  stepCount: { fontSize: 12, color: Colors.textMuted, marginTop: 10 },
+  progressBar: { flex: 1, height: 5, borderRadius: 3, backgroundColor: Colors.creamBorder },
+  progressBarActive: { backgroundColor: Colors.brandDeep },
+  stepCount: { fontSize: 12, color: Colors.warmMuted, marginTop: 10 },
   body: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 24 },
-  title: { fontSize: 26, fontWeight: '800', color: Colors.textPrimary, letterSpacing: -0.5, marginBottom: 6 },
-  sub: { fontSize: 14, color: Colors.textLight, lineHeight: 20, marginBottom: 28 },
+  title: { fontSize: 30, lineHeight: 36, fontWeight: '800', color: Colors.textPrimary, letterSpacing: -0.5, marginBottom: 8 },
+  sub: { fontSize: 15, color: Colors.warmGrey, lineHeight: 22, marginBottom: 28 },
   fields: { gap: 18 },
-  footer: { paddingHorizontal: 24, paddingTop: 12, borderTopWidth: 1, borderTopColor: Colors.border },
-  button: { backgroundColor: Colors.primary, borderRadius: 12, paddingVertical: 15, alignItems: 'center' },
+  // Matches the sign-in inputs; FormField's own style is kept for Settings.
+  input: { backgroundColor: Colors.surface, borderWidth: 1.5, borderColor: Colors.creamBorder, borderRadius: 14 },
+  footer: { paddingHorizontal: 24, paddingTop: 12, borderTopWidth: 1, borderTopColor: Colors.creamBorder },
+  button: {
+    backgroundColor: Colors.brandDeep,
+    borderRadius: 14,
+    paddingVertical: 17,
+    alignItems: 'center',
+    shadowColor: Colors.brandDeep,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    elevation: 6,
+  },
   buttonDisabled: { opacity: 0.4 },
-  buttonText: { color: Colors.white, fontSize: 15, fontWeight: '700' },
+  buttonText: { color: Colors.white, fontSize: 16.5, fontWeight: '700' },
 });
