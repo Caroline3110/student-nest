@@ -523,6 +523,10 @@ export default {
     requiredAdmin: 'Name and subjects are required.',
   },
   roommates: {
+    filters: 'Filters',
+    viewProfile: 'View profile',
+    save: 'Save profile',
+    ownProfile: 'This is your own profile.',
     title: 'Roommate Finder',
     findTab: 'Find a roommate',
     addTab: 'Add my profile',

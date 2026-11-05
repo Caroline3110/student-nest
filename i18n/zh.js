@@ -523,6 +523,10 @@ export default {
     requiredAdmin: '姓名和科目为必填项。',
   },
   roommates: {
+    filters: '筛选',
+    viewProfile: '查看资料',
+    save: '收藏资料',
+    ownProfile: '这是你自己的资料。',
     title: '找室友',
     findTab: '找室友',
     addTab: '发布我的资料',
