@@ -15,9 +15,10 @@ export default function SavedScreen({ navigation }) {
   const t = useT();
   const { items, loading, toggle } = useSaved();
 
-  const roommates = items
-    .filter(i => i.type === 'roommate')
-    .sort((a, b) => (b.savedAt?.seconds || 0) - (a.savedAt?.seconds || 0));
+  const byNewest = (a, b) => (b.savedAt?.seconds || 0) - (a.savedAt?.seconds || 0);
+  const roommates = items.filter(i => i.type === 'roommate').sort(byNewest);
+  const places = items.filter(i => i.type === 'place').sort(byNewest);
+  const total = roommates.length + places.length;
 
   return (
     <View style={styles.root}>
@@ -26,7 +27,7 @@ export default function SavedScreen({ navigation }) {
         <Text style={styles.subtitle}>
           {loading
             ? t('saved.subtitle')
-            : t(roommates.length === 1 ? 'saved.countOne' : 'saved.count', { count: roommates.length })}
+            : t(total === 1 ? 'saved.countOne' : 'saved.count', { count: total })}
         </Text>
       </View>
 
@@ -36,7 +37,7 @@ export default function SavedScreen({ navigation }) {
       >
         {loading ? (
           <ActivityIndicator color={Colors.brandDeep} style={{ marginTop: 48 }} />
-        ) : roommates.length === 0 ? (
+        ) : total === 0 ? (
           <View style={styles.empty}>
             <View style={styles.emptyIcon}>
               <Icon name="bookmark" size={28} color={Colors.brandDeep} />
@@ -47,7 +48,10 @@ export default function SavedScreen({ navigation }) {
               <Text style={styles.buttonText}>{t('messages.findRoommates')}</Text>
             </PressableScale>
           </View>
-        ) : roommates.map(item => (
+        ) : (
+          <>
+          {roommates.length > 0 && <Text style={styles.groupLabel}>{t('saved.profiles')}</Text>}
+          {roommates.map(item => (
           <PressableScale
             key={item.id}
             style={styles.card}
@@ -78,7 +82,45 @@ export default function SavedScreen({ navigation }) {
               <Icon name="heart" size={20} color={Colors.brandDeep} />
             </Pressable>
           </PressableScale>
-        ))}
+          ))}
+
+          {places.length > 0 && (
+            <Text style={[styles.groupLabel, roommates.length > 0 && { marginTop: 14 }]}>
+              {t('saved.places')}
+            </Text>
+          )}
+          {places.map(item => (
+            <PressableScale
+              key={item.id}
+              style={styles.card}
+              scaleTo={0.99}
+              onPress={() => navigation.navigate('Accommodation')}
+            >
+              <View style={styles.avatar}>
+                <Icon name="home" size={19} color={Colors.brandDeep} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.name}>{item.name}</Text>
+                {item.priceRange ? <Text style={styles.meta}>{item.priceRange}</Text> : null}
+                {item.area ? (
+                  <View style={styles.metaRow}>
+                    <Icon name="map-pin" size={12} color={Colors.warmMuted} />
+                    <Text style={styles.metaSmall} numberOfLines={1}>{item.area}</Text>
+                  </View>
+                ) : null}
+              </View>
+              <Pressable
+                onPress={() => toggle(item.id)}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel={t('saved.remove')}
+              >
+                <Icon name="heart" size={20} color={Colors.brandDeep} />
+              </Pressable>
+            </PressableScale>
+          ))}
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -91,6 +133,14 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 13.5, color: Colors.warmGrey, marginTop: 4 },
 
   scroll: { paddingHorizontal: 20, paddingTop: 16 },
+  groupLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.warmMuted,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 10,
+  },
   empty: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 12 },
   emptyIcon: {
     width: 70,

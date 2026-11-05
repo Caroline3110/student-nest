@@ -178,6 +178,8 @@ export default {
     findRoommates: '寻找室友',
   },
   saved: {
+    profiles: '室友资料',
+    places: '住处',
     subtitle: '你收藏的资料。',
     count: '已收藏 {{count}} 份资料',
     countOne: '已收藏 1 份资料',
@@ -189,6 +191,24 @@ export default {
     myRoommatePost: '我的室友资料',
   },
   housing: {
+    tabs: {
+      halls: '学生公寓',
+      flats: '公寓与房屋',
+    },
+    searchPlaceholder: '按地区、学校或品牌搜索',
+    noneFound: '没有符合条件的住处',
+    savePlace: '收藏这个住处',
+    flatsSubtitle: '两居室以内，遍布伦敦',
+    flatsBody: '我们正在与 Rightmove 和 Zoopla 合作，把一居室和两居室公寓接入 Student Nest，并提供适合学生的筛选和已验证的室友。在上线之前，下面的搜索已经设定为伦敦、最多两居室。',
+    flatsTitle: '公寓房源即将上线',
+    searchNow: '立即搜索',
+    flatSites: {
+      rightmove: '伦敦租房，最多两居室',
+      zoopla: '伦敦租房，最多两居室',
+      openrent: '直接向房东租房，免中介费',
+      spareroom: '合租公寓和房屋的房间',
+    },
+    flatsFootnote: '以上为外部网站。Student Nest 不审核这些房源，请务必在看房并确认合同前不要支付押金。',
     accommodation: '学生公寓',
     providersAvailable: '共 {{count}} 家公寓',
     priceFilters: {

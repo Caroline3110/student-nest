@@ -178,6 +178,8 @@ export default {
     findRoommates: 'Find roommates',
   },
   saved: {
+    profiles: 'Roommate profiles',
+    places: 'Places',
     subtitle: 'Profiles you kept for later.',
     count: '{{count}} saved profiles',
     countOne: '1 saved profile',
@@ -189,6 +191,24 @@ export default {
     myRoommatePost: 'My roommate profile',
   },
   housing: {
+    tabs: {
+      halls: 'Student halls',
+      flats: 'Flats & houses',
+    },
+    searchPlaceholder: 'Search by area, university or provider',
+    noneFound: 'No places match',
+    savePlace: 'Save this place',
+    flatsSubtitle: 'Up to 2 bedrooms, across London',
+    flatsTitle: 'Flat listings are on the way',
+    flatsBody: "We're working with Rightmove and Zoopla to bring one and two bedroom flats into Student Nest, with student-friendly filters and verified flatmates. Until that's live, these searches are already set to London and a maximum of two bedrooms.",
+    searchNow: 'Search now',
+    flatSites: {
+      rightmove: 'London rentals, up to 2 bedrooms',
+      zoopla: 'London rentals, up to 2 bedrooms',
+      openrent: 'Rent direct from landlords, no agency fee',
+      spareroom: 'Rooms in shared flats and houses',
+    },
+    flatsFootnote: 'These are outside websites. Student Nest does not check their listings, so never pay a deposit before you have seen the place and the contract.',
     accommodation: 'Accommodation',
     providersAvailable: '{{count}} providers available',
     priceFilters: {
