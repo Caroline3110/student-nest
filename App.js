@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import * as Notifications from 'expo-notifications';
@@ -12,6 +13,11 @@ import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 import HomeScreen from './screens/HomeScreen';
+import ExploreScreen from './screens/ExploreScreen';
+import MessagesScreen from './screens/MessagesScreen';
+import SavedScreen from './screens/SavedScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import AppTabBar from './components/AppTabBar';
 import AccommodationScreen from './screens/housing/AccommodationScreen';
 import SplashScreen from './screens/SplashScreen';
 import ProviderDetailScreen from './screens/housing/ProviderDetailScreen';
@@ -31,6 +37,21 @@ import SettingsScreen from './screens/SettingsScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+// The five sections along the bottom. Everything else is pushed on top of
+// these by the stack below, so the bar stays put while you move around.
+function MainTabs() {
+  return (
+    <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={props => <AppTabBar {...props} />}>
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Explore" component={ExploreScreen} />
+      <Tab.Screen name="Messages" component={MessagesScreen} />
+      <Tab.Screen name="Saved" component={SavedScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+}
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -111,7 +132,7 @@ function AppStack({ signedIn }) {
         <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
       ) : (
         <>
-          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Main" component={MainTabs} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
           <Stack.Screen name="EditProfile" component={EditProfileScreen} />
           <Stack.Screen name="Accommodation" component={AccommodationScreen} />
