@@ -1,23 +1,24 @@
-// Red & white theme: white surfaces, one red accent, neutral greys.
-// Green/amber are kept only for status meaning (done, due soon).
+// Warm theme: cream pages, white cards, one deep red accent, warm greys.
+// Green/amber are kept only for status meaning (done, due soon), and
+// error stays a brighter red so it reads as a warning, not a brand colour.
 export default {
-  background: '#FFFFFF',
+  background: '#FAF4EE',
   surface: '#FFFFFF',
-  surfaceMuted: '#F7F7F8',
-  border: '#ECECEE',
-  borderLight: '#F4F4F5',
+  surfaceMuted: '#F6F0EA',
+  border: '#EFE4DA',
+  borderLight: '#F6EEE7',
 
-  brand: '#DC2626',
-  brandMid: '#B91C1C',
+  brand: '#8B1A28',
+  brandMid: '#6F1420',
 
-  primary: '#DC2626',
-  primaryLight: '#FEF2F2',
-  primaryDark: '#B91C1C',
+  primary: '#8B1A28',
+  primaryLight: '#F3E1DA',
+  primaryDark: '#6F1420',
 
   textPrimary: '#111111',
-  textSecondary: '#3F3F46',
-  textLight: '#71717A',
-  textMuted: '#A1A1AA',
+  textSecondary: '#44403C',
+  textLight: '#6B625C',
+  textMuted: '#A39A93',
 
   success: '#16A34A',
   successLight: '#F0FDF4',
@@ -27,14 +28,14 @@ export default {
   errorLight: '#FEF2F2',
 
   white: '#FFFFFF',
-  backgroundDark: '#F4F4F5',
+  backgroundDark: '#F1E8DF',
   secondary: '#16A34A',
   secondaryLight: '#F0FDF4',
-  accent: '#DC2626',
-  accentDark: '#B91C1C',
-  info: '#DC2626',
+  accent: '#8B1A28',
+  accentDark: '#6F1420',
+  info: '#8B1A28',
 
-  // Soft pastels for playful decoration only (welcome bubbles, feature chips).
+  // Soft pastels for decoration only (the MindNest highlight card).
   playYellow: '#FEF3C7',
   playSky: '#E0F2FE',
   playLilac: '#EDE9FE',
@@ -42,7 +43,9 @@ export default {
   playPeach: '#FFE4E6',
   shadow: '#000000',
 
-  // Warm palette for the welcome and sign-in screens.
+  // Names the redesigned screens use. Same values as the tokens above —
+  // they say what the colour is for rather than where it sits in the old
+  // red-and-white scheme, so new screens read better.
   brandDeep: '#8B1A28',
   cream: '#FAF4EE',
   creamBorder: '#EFE4DA',

@@ -183,46 +183,48 @@ export default function StudyDashboardScreen({ navigation }) {
               </View>
             ) : (
               <View style={styles.grid}>
-                <View>
-                  {hours.map(hour => (
-                    <View key={hour} style={styles.hourRow}>
-                      <Text style={styles.hourLabel}>{String(hour).padStart(2, '0')}:00</Text>
-                      <View style={styles.hourLine} />
-                    </View>
-                  ))}
-                </View>
+                <View style={styles.gridInner}>
+                  <View>
+                    {hours.map(hour => (
+                      <View key={hour} style={styles.hourRow}>
+                        <Text style={styles.hourLabel}>{String(hour).padStart(2, '0')}:00</Text>
+                        <View style={styles.hourLine} />
+                      </View>
+                    ))}
+                  </View>
 
-                <View style={styles.blockLayer}>
-                {placed.map(({ cls, lane }) => {
-                  const top = ((toMinutes(cls.startTime) - gridStart * 60) / 60) * HOUR_HEIGHT;
-                  const height = Math.max(
-                    ((toMinutes(cls.endTime) - toMinutes(cls.startTime)) / 60) * HOUR_HEIGHT - 5,
-                    42,
-                  );
-                  const tint = classTint(cls);
-                  const laneWidth = 100 / lanes;
-                  return (
-                    <View
-                      key={cls.id}
-                      style={[styles.block, {
-                        top,
-                        height,
-                        backgroundColor: tint.bg,
-                        left: `${lane * laneWidth}%`,
-                        width: `${laneWidth}%`,
-                      }]}
-                    >
-                      <Text style={[styles.blockSubject, { color: tint.text }]} numberOfLines={2}>
-                        {cls.subject}
-                      </Text>
-                      {cls.location && cls.location !== 'TBA' ? (
-                        <Text style={[styles.blockMeta, { color: tint.text }]} numberOfLines={1}>
-                          {cls.location}
+                  <View style={styles.blockLayer}>
+                  {placed.map(({ cls, lane }) => {
+                    const top = ((toMinutes(cls.startTime) - gridStart * 60) / 60) * HOUR_HEIGHT;
+                    const height = Math.max(
+                      ((toMinutes(cls.endTime) - toMinutes(cls.startTime)) / 60) * HOUR_HEIGHT - 5,
+                      42,
+                    );
+                    const tint = classTint(cls);
+                    const laneWidth = 100 / lanes;
+                    return (
+                      <View
+                        key={cls.id}
+                        style={[styles.block, {
+                          top,
+                          height,
+                          backgroundColor: tint.bg,
+                          left: `${lane * laneWidth}%`,
+                          width: `${laneWidth}%`,
+                        }]}
+                      >
+                        <Text style={[styles.blockSubject, { color: tint.text }]} numberOfLines={2}>
+                          {cls.subject}
                         </Text>
-                      ) : null}
-                    </View>
-                  );
-                })}
+                        {cls.location && cls.location !== 'TBA' ? (
+                          <Text style={[styles.blockMeta, { color: tint.text }]} numberOfLines={1}>
+                            {cls.location}
+                          </Text>
+                        ) : null}
+                      </View>
+                    );
+                  })}
+                  </View>
                 </View>
               </View>
             )}
@@ -376,8 +378,11 @@ const styles = StyleSheet.create({
   hourRow: { flexDirection: 'row', alignItems: 'flex-start', height: HOUR_HEIGHT, gap: 10 },
   hourLabel: { width: 42, fontSize: 11.5, color: Colors.warmMuted, fontWeight: '600', marginTop: -6 },
   hourLine: { flex: 1, height: 1, backgroundColor: Colors.creamBorder },
-  // The blocks float over the hour lines, inset past the time column.
-  blockLayer: { position: 'absolute', left: 66, right: 14, top: 14 },
+  // An unpadded box so the absolute blocks line up with the hour rows.
+  gridInner: { position: 'relative' },
+  // The blocks float over the hour lines, starting past the time column
+  // (label width 42 + the row gap of 10).
+  blockLayer: { position: 'absolute', left: 52, right: 0, top: 0 },
   block: {
     position: 'absolute',
     borderRadius: 11,
