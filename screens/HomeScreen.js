@@ -135,14 +135,20 @@ export default function HomeScreen({ navigation }) {
           {weekDays(now).map(({ name, date }) => {
             const isToday = sameDay(date, now);
             return (
-              <View key={name} style={[styles.day, isToday && styles.dayToday]}>
+              <Pressable
+                key={name}
+                style={[styles.day, isToday && styles.dayToday]}
+                onPress={() => navigation.navigate('StudyDashboard', { day: name })}
+                accessibilityRole="button"
+                accessibilityLabel={t(`days.${name}`)}
+              >
                 <Text style={[styles.dayName, isToday && styles.dayTextToday]}>
                   {t(`daysShort.${name}`)}
                 </Text>
                 <Text style={[styles.dayNum, isToday && styles.dayTextToday]}>
                   {date.getDate()}
                 </Text>
-              </View>
+              </Pressable>
             );
           })}
         </View>

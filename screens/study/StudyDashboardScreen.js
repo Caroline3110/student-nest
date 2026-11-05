@@ -46,7 +46,7 @@ const withLanes = (classes) => {
   return { placed, lanes: Math.max(laneEnds.length, 1) };
 };
 
-export default function StudyDashboardScreen({ navigation }) {
+export default function StudyDashboardScreen({ navigation, route }) {
   const { t, lang } = useLanguage();
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState('timetable');
@@ -54,10 +54,16 @@ export default function StudyDashboardScreen({ navigation }) {
   const [tasks, setTasks] = useState([]);
   const [exams, setExams] = useState([]);
 
+  // Opened from a day on the Home week strip, otherwise today.
   const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const requestedDay = route?.params?.day;
   const [selectedDay, setSelectedDay] = useState(
-    WEEKDAYS.includes(todayName) ? todayName : 'Monday'
+    WEEKDAYS.includes(requestedDay) ? requestedDay
+      : WEEKDAYS.includes(todayName) ? todayName : 'Monday'
   );
+  useEffect(() => {
+    if (WEEKDAYS.includes(requestedDay)) setSelectedDay(requestedDay);
+  }, [requestedDay]);
 
   useEffect(() => {
     const uid = auth.currentUser?.uid;
