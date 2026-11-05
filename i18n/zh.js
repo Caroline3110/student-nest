@@ -429,6 +429,13 @@ export default {
     Saturday: '周六',
     Sunday: '周日',
   },
+  planner: {
+    noClassesSub: '这一天没有课。可以添加课程或导入学校的课表。',
+    noTasksSub: '添加第一个任务，它就会显示在这里。',
+    noExamsTitle: '还没有考试',
+    noExamsSub: '添加考试即可获得提醒并追踪复习进度。',
+    addExam: '添加考试',
+  },
   timetable: {
     subtitle: '每周课程安排',
     oneClass: '1 节课',

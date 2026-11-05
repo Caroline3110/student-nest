@@ -1,262 +1,468 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import { classTint } from '../../constants/classTints';
 import { useLanguage } from '../../i18n';
 import { db, auth } from '../../firebase';
-import { collection, query, onSnapshot } from 'firebase/firestore';
+import { collection, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import Icon from '../../components/Icon';
+import ScreenHeader from '../../components/ScreenHeader';
+import PressableScale from '../../components/PressableScale';
 
-const WEEKLY_GOAL = 30;
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+const HOUR_HEIGHT = 62;
+const DEFAULT_START = 9;
+const DEFAULT_END = 17;
+
+const toMinutes = (hhmm) => {
+  const [h, m] = String(hhmm || '').split(':').map(Number);
+  return Number.isFinite(h) ? h * 60 + (m || 0) : 0;
+};
+
+// Monday to Friday of this week; the weekend looks ahead to the next one.
+const weekDays = (today) => {
+  const start = new Date(today);
+  const weekday = start.getDay();
+  start.setDate(start.getDate() + (weekday === 0 ? 1 : weekday === 6 ? 2 : 1 - weekday));
+  return WEEKDAYS.map((name, i) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + i);
+    return { name, date };
+  });
+};
+
+// Classes that overlap sit side by side: each one takes the first free lane.
+const withLanes = (classes) => {
+  const sorted = [...classes].sort((a, b) => toMinutes(a.startTime) - toMinutes(b.startTime));
+  const laneEnds = [];
+  const placed = sorted.map(cls => {
+    const start = toMinutes(cls.startTime);
+    let lane = laneEnds.findIndex(end => end <= start);
+    if (lane === -1) { lane = laneEnds.length; laneEnds.push(0); }
+    laneEnds[lane] = Math.max(toMinutes(cls.endTime), start + 30);
+    return { cls, lane };
+  });
+  return { placed, lanes: Math.max(laneEnds.length, 1) };
+};
 
 export default function StudyDashboardScreen({ navigation }) {
   const { t, lang } = useLanguage();
+  const insets = useSafeAreaInsets();
+  const [tab, setTab] = useState('timetable');
+  const [classes, setClasses] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [exams, setExams] = useState([]);
 
+  const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const [selectedDay, setSelectedDay] = useState(
+    WEEKDAYS.includes(todayName) ? todayName : 'Monday'
+  );
+
   useEffect(() => {
-    if (!auth.currentUser) return;
-    const uid = auth.currentUser.uid;
-
-    const tasksRef = collection(db, 'users', uid, 'tasks');
-    const unsubTasks = onSnapshot(query(tasksRef), (snap) => {
-      const loaded = [];
-      snap.forEach(d => loaded.push({ id: d.id, ...d.data() }));
-      setTasks(loaded);
-    });
-
-    const examsRef = collection(db, 'users', uid, 'exams');
-    const unsubExams = onSnapshot(query(examsRef), (snap) => {
-      const loaded = [];
-      snap.forEach(d => loaded.push({ id: d.id, ...d.data() }));
-      setExams(loaded);
-    });
-
-    return () => { unsubTasks(); unsubExams(); };
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    const listen = (name, setter) => onSnapshot(
+      collection(db, 'users', uid, name),
+      snap => setter(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      err => console.error(`Error loading ${name}:`, err),
+    );
+    const unsubs = [
+      listen('timetable', setClasses),
+      listen('tasks', setTasks),
+      listen('exams', setExams),
+    ];
+    return () => unsubs.forEach(u => u());
   }, []);
 
-  const todaysTasks = tasks.filter(t => !t.completed).slice(0, 3);
+  const dayClasses = classes.filter(c => c.day === selectedDay);
+  const { placed, lanes } = withLanes(dayClasses);
 
-  const upcomingExams = exams
-    .filter(e => {
-      const d = new Date(e.date); const now = new Date();
-      const in30 = new Date(); in30.setDate(now.getDate() + 30);
-      return d >= now && d <= in30;
-    })
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
-    .slice(0, 3);
+  // The grid covers the working day, stretched to fit anything outside it.
+  const starts = dayClasses.map(c => Math.floor(toMinutes(c.startTime) / 60));
+  const ends = dayClasses.map(c => Math.ceil(toMinutes(c.endTime) / 60));
+  const gridStart = Math.min(DEFAULT_START, ...starts);
+  const gridEnd = Math.max(DEFAULT_END, ...ends);
+  const hours = Array.from({ length: gridEnd - gridStart + 1 }, (_, i) => gridStart + i);
 
-  const studiedHours = exams.reduce((sum, e) => sum + (e.hoursCompleted || 0), 0);
-  const weekPct = Math.min(Math.round((studiedHours / WEEKLY_GOAL) * 100), 100);
+  const toggleTask = async (task) => {
+    try {
+      await updateDoc(doc(db, 'users', auth.currentUser.uid, 'tasks', task.id), {
+        completed: !task.completed,
+      });
+    } catch (err) {
+      console.error('Error updating task:', err);
+    }
+  };
 
-  const formatDate = (d) => new Date(d).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-GB', { month: 'short', day: 'numeric' });
-  const getDaysUntil = (d) => Math.ceil((new Date(d) - new Date()) / 86400000);
+  const formatDate = (d) =>
+    new Date(d).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-GB', { month: 'short', day: 'numeric' });
+  const daysUntil = (d) => Math.ceil((new Date(d) - new Date()) / 86400000);
 
-  const quickActions = [
-    { label: t('study.timetable'), screen: 'Timetable' },
-    { label: t('study.exams'), screen: 'Exams' },
-    { label: t('study.todo'), screen: 'Todo' },
-    { label: t('study.focus'), screen: 'Pomodoro' },
+  const activeTasks = tasks.filter(task => !task.completed);
+  const doneTasks = tasks.filter(task => task.completed);
+  const sortedExams = [...exams].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const TABS = [
+    { key: 'timetable', label: t('study.timetable') },
+    { key: 'tasks', label: t('study.todo') },
+    { key: 'exams', label: t('study.exams') },
   ];
 
-  const priorityColor = (p) =>
-    p === 'high' ? Colors.error : p === 'medium' ? Colors.warning : Colors.textMuted;
+  const addButton = (label, screen) => (
+    <PressableScale style={styles.addBtn} onPress={() => navigation.navigate(screen)}>
+      <Icon name="plus" size={18} color={Colors.white} />
+      <Text style={styles.addBtnText}>{label}</Text>
+    </PressableScale>
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← {t('common.back')}</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('study.title')}</Text>
-        <Text style={styles.headerSubtitle}>{t('study.subtitle')}</Text>
+    <View style={styles.root}>
+      <ScreenHeader
+        navigation={navigation}
+        title={t('study.title')}
+        actions={[{
+          icon: 'clock',
+          label: t('study.focus'),
+          onPress: () => navigation.navigate('Pomodoro'),
+        }]}
+      />
+
+      <View style={styles.segment}>
+        {TABS.map(item => (
+          <Pressable
+            key={item.key}
+            style={[styles.segmentBtn, tab === item.key && styles.segmentBtnActive]}
+            onPress={() => setTab(item.key)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: tab === item.key }}
+          >
+            <Text style={[styles.segmentText, tab === item.key && styles.segmentTextActive]}>
+              {item.label}
+            </Text>
+          </Pressable>
+        ))}
       </View>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
-        {/* Quick actions */}
-        <Text style={styles.sectionLabel}>{t('study.quickAccess')}</Text>
-        <View style={styles.quickGrid}>
-          {quickActions.map(a => (
-            <TouchableOpacity
-              key={a.screen}
-              style={styles.quickCard}
-              onPress={() => navigation.navigate(a.screen)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.quickLabel}>{a.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Weekly study hours */}
-        <Text style={styles.sectionLabel}>{t('study.progress')}</Text>
-        <View style={styles.goalCard}>
-          <View style={styles.goalRow}>
-            <View>
-              <Text style={styles.goalHours}>
-                {studiedHours}
-                <Text style={styles.goalTotal}> / {WEEKLY_GOAL}h</Text>
-              </Text>
-              <Text style={styles.goalSub}>{t('study.hoursLogged')}</Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 28 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {tab === 'timetable' && (
+          <>
+            <View style={styles.weekRow}>
+              {weekDays(new Date()).map(({ name, date }) => {
+                const active = name === selectedDay;
+                return (
+                  <Pressable
+                    key={name}
+                    style={[styles.day, active && styles.dayActive]}
+                    onPress={() => setSelectedDay(name)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                  >
+                    <Text style={[styles.dayName, active && styles.dayTextActive]}>
+                      {t(`daysShort.${name}`)}
+                    </Text>
+                    <Text style={[styles.dayNum, active && styles.dayTextActive]}>
+                      {date.getDate()}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
-            <View style={styles.examsBadge}>
-              <Text style={styles.examsNum}>{exams.length}</Text>
-              <Text style={styles.examsLabel}>{t('study.examsCount')}</Text>
-            </View>
-          </View>
-          <View style={styles.track}>
-            <View style={[styles.fill, { width: `${weekPct}%` }]} />
-          </View>
-          <View style={styles.goalFooter}>
-            <Text style={styles.goalPct}>{t('study.pctOfGoal', { pct: weekPct })}</Text>
-            <Text style={styles.goalLeft}>
-              {studiedHours >= WEEKLY_GOAL ? t('study.goalReached') : t('study.hoursToGo', { hours: WEEKLY_GOAL - studiedHours })}
-            </Text>
-          </View>
-        </View>
 
-        {/* Today's tasks */}
-        <View style={styles.sectionRow}>
-          <Text style={styles.sectionLabel}>{t('study.activeTasks')}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Todo')}>
-            <Text style={styles.viewAll}>{t('study.viewAll')}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {todaysTasks.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>
-              {tasks.length === 0 ? t('study.noTasks') : t('study.allTasksDone')}
-            </Text>
-          </View>
-        ) : todaysTasks.map(task => (
-          <TouchableOpacity key={task.id} style={styles.taskRow} onPress={() => navigation.navigate('Todo')} activeOpacity={0.8}>
-            <View style={styles.checkbox} />
-            <View style={styles.taskContent}>
-              <Text style={styles.taskTitle}>{task.title}</Text>
-              <Text style={styles.taskMeta}>{t(`study.categories.${task.category}`)} · {t(`study.priorities.${task.priority}`)}</Text>
-            </View>
-            <View style={[styles.priorityDot, { backgroundColor: priorityColor(task.priority) }]} />
-          </TouchableOpacity>
-        ))}
-
-        {/* Upcoming exams */}
-        <View style={styles.sectionRow}>
-          <Text style={styles.sectionLabel}>{t('study.upcomingExams')}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Exams')}>
-            <Text style={styles.viewAll}>{t('study.viewAll')}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {upcomingExams.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>
-              {exams.length === 0 ? t('study.noExams') : t('study.noExamsSoon')}
-            </Text>
-          </View>
-        ) : upcomingExams.map(exam => {
-          const days = getDaysUntil(exam.date);
-          const pct = Math.round(((exam.hoursCompleted || 0) / (exam.hoursNeeded || 1)) * 100);
-          return (
-            <TouchableOpacity key={exam.id} style={styles.examCard} onPress={() => navigation.navigate('Exams')} activeOpacity={0.8}>
-              <View style={styles.examRow}>
-                <View style={styles.examInfo}>
-                  <Text style={styles.examSubject}>{exam.subject}</Text>
-                  <Text style={styles.examDate}>{formatDate(exam.date)} · {exam.time}</Text>
+            {dayClasses.length === 0 ? (
+              <View style={styles.empty}>
+                <View style={styles.emptyIcon}>
+                  <Icon name="calendar" size={26} color={Colors.brandDeep} />
                 </View>
-                <View style={[styles.daysBadge, days <= 3 && styles.daysBadgeUrgent]}>
-                  <Text style={[styles.daysText, days <= 3 && styles.daysTextUrgent]}>{t('study.daysShort', { count: days })}</Text>
+                <Text style={styles.emptyTitle}>{t('timetable.noClassesDay')}</Text>
+                <Text style={styles.emptySub}>{t('planner.noClassesSub')}</Text>
+              </View>
+            ) : (
+              <View style={styles.grid}>
+                <View>
+                  {hours.map(hour => (
+                    <View key={hour} style={styles.hourRow}>
+                      <Text style={styles.hourLabel}>{String(hour).padStart(2, '0')}:00</Text>
+                      <View style={styles.hourLine} />
+                    </View>
+                  ))}
+                </View>
+
+                <View style={styles.blockLayer}>
+                {placed.map(({ cls, lane }) => {
+                  const top = ((toMinutes(cls.startTime) - gridStart * 60) / 60) * HOUR_HEIGHT;
+                  const height = Math.max(
+                    ((toMinutes(cls.endTime) - toMinutes(cls.startTime)) / 60) * HOUR_HEIGHT - 5,
+                    42,
+                  );
+                  const tint = classTint(cls);
+                  const laneWidth = 100 / lanes;
+                  return (
+                    <View
+                      key={cls.id}
+                      style={[styles.block, {
+                        top,
+                        height,
+                        backgroundColor: tint.bg,
+                        left: `${lane * laneWidth}%`,
+                        width: `${laneWidth}%`,
+                      }]}
+                    >
+                      <Text style={[styles.blockSubject, { color: tint.text }]} numberOfLines={2}>
+                        {cls.subject}
+                      </Text>
+                      {cls.location && cls.location !== 'TBA' ? (
+                        <Text style={[styles.blockMeta, { color: tint.text }]} numberOfLines={1}>
+                          {cls.location}
+                        </Text>
+                      ) : null}
+                    </View>
+                  );
+                })}
                 </View>
               </View>
-              <View style={styles.track}>
-                <View style={[styles.fill, { width: `${Math.min(pct, 100)}%`, backgroundColor: Colors.success }]} />
-              </View>
-              <Text style={styles.examProgress}>{t('study.hoursStudied', { done: exam.hoursCompleted || 0, total: exam.hoursNeeded })}</Text>
-            </TouchableOpacity>
-          );
-        })}
+            )}
 
-        <View style={{ height: 28 }} />
+            {addButton(t('timetable.addClass'), 'Timetable')}
+          </>
+        )}
+
+        {tab === 'tasks' && (
+          <>
+            {tasks.length === 0 ? (
+              <View style={styles.empty}>
+                <View style={styles.emptyIcon}>
+                  <Icon name="check-circle" size={26} color={Colors.brandDeep} />
+                </View>
+                <Text style={styles.emptyTitle}>{t('todo.emptyTitle')}</Text>
+                <Text style={styles.emptySub}>{t('planner.noTasksSub')}</Text>
+              </View>
+            ) : (
+              <>
+                <Text style={styles.listLabel}>
+                  {t('todo.summary', { active: activeTasks.length, done: doneTasks.length })}
+                </Text>
+                {[...activeTasks, ...doneTasks].map(task => (
+                  <Pressable
+                    key={task.id}
+                    style={styles.taskRow}
+                    onPress={() => toggleTask(task)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: !!task.completed }}
+                  >
+                    <View style={[styles.checkbox, task.completed && styles.checkboxOn]}>
+                      {task.completed ? <Icon name="check" size={13} color={Colors.white} /> : null}
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.taskTitle, task.completed && styles.taskDone]} numberOfLines={2}>
+                        {task.title}
+                      </Text>
+                      <Text style={styles.taskMeta}>
+                        {t(`study.categories.${task.category}`)} · {t(`study.priorities.${task.priority}`)}
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </>
+            )}
+            {addButton(t('todo.addTask'), 'Todo')}
+          </>
+        )}
+
+        {tab === 'exams' && (
+          <>
+            {sortedExams.length === 0 ? (
+              <View style={styles.empty}>
+                <View style={styles.emptyIcon}>
+                  <Icon name="award" size={26} color={Colors.brandDeep} />
+                </View>
+                <Text style={styles.emptyTitle}>{t('planner.noExamsTitle')}</Text>
+                <Text style={styles.emptySub}>{t('planner.noExamsSub')}</Text>
+              </View>
+            ) : (
+              <>
+                <Text style={styles.listLabel}>{t('exams.scheduled', { count: sortedExams.length })}</Text>
+                {sortedExams.map(exam => {
+                  const days = daysUntil(exam.date);
+                  const pct = Math.min(
+                    Math.round(((exam.hoursCompleted || 0) / (exam.hoursNeeded || 1)) * 100), 100,
+                  );
+                  return (
+                    <Pressable
+                      key={exam.id}
+                      style={styles.examCard}
+                      onPress={() => navigation.navigate('Exams')}
+                    >
+                      <View style={styles.examTop}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.examSubject} numberOfLines={1}>{exam.subject}</Text>
+                          <Text style={styles.examDate}>{formatDate(exam.date)} · {exam.time}</Text>
+                        </View>
+                        <View style={[styles.daysBadge, days <= 3 && styles.daysBadgeUrgent]}>
+                          <Text style={[styles.daysText, days <= 3 && styles.daysTextUrgent]}>
+                            {days < 0 ? t('exams.past') : days === 0 ? t('exams.today') : t('study.daysShort', { count: days })}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.track}>
+                        <View style={[styles.fill, { width: `${pct}%` }]} />
+                      </View>
+                      <Text style={styles.examProgress}>
+                        {t('study.hoursStudied', { done: exam.hoursCompleted || 0, total: exam.hoursNeeded })}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </>
+            )}
+            {addButton(t('planner.addExam'), 'Exams')}
+          </>
+        )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  header: {
-    backgroundColor: Colors.surface, paddingHorizontal: 20,
-    paddingTop: 12, paddingBottom: 18,
-    borderBottomWidth: 1, borderBottomColor: Colors.border,
+  root: { flex: 1, backgroundColor: Colors.cream },
+
+  segment: {
+    flexDirection: 'row',
+    gap: 6,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    padding: 4,
+    borderRadius: 999,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.creamBorder,
   },
-  backButton: { marginBottom: 12 },
-  backButtonText: { fontSize: 14, fontWeight: '500', color: Colors.textLight },
-  headerTitle: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, letterSpacing: -0.4, marginBottom: 2 },
-  headerSubtitle: { fontSize: 13, color: Colors.textLight },
+  segmentBtn: { flex: 1, paddingVertical: 9, borderRadius: 999, alignItems: 'center' },
+  segmentBtnActive: { backgroundColor: Colors.brandDeep },
+  segmentText: { fontSize: 13.5, fontWeight: '600', color: Colors.warmGrey },
+  segmentTextActive: { color: Colors.white, fontWeight: '700' },
+
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingTop: 20 },
-  sectionLabel: { fontSize: 10, fontWeight: '600', color: Colors.textMuted, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 },
-  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  viewAll: { fontSize: 13, fontWeight: '500', color: Colors.primary },
-  quickGrid: { flexDirection: 'row', gap: 8, marginBottom: 24 },
-  quickCard: {
-    flex: 1, backgroundColor: Colors.surface, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border,
-    paddingVertical: 16, alignItems: 'center', justifyContent: 'center',
+  scrollContent: { paddingHorizontal: 20 },
+
+  weekRow: { flexDirection: 'row', gap: 8, marginBottom: 18 },
+  day: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.creamBorder,
+    gap: 3,
   },
-  quickLabel: { fontSize: 12, fontWeight: '600', color: Colors.textPrimary },
-  goalCard: {
-    backgroundColor: Colors.surface, borderRadius: 14,
-    borderWidth: 1, borderColor: Colors.border,
-    padding: 16, marginBottom: 24,
+  dayActive: { backgroundColor: Colors.brandDeep, borderColor: Colors.brandDeep },
+  dayName: { fontSize: 11.5, fontWeight: '600', color: Colors.warmGrey },
+  dayNum: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  dayTextActive: { color: Colors.white },
+
+  grid: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.creamBorder,
+    borderRadius: 18,
+    padding: 14,
+    paddingRight: 16,
   },
-  goalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
-  goalHours: { fontSize: 30, fontWeight: '700', color: Colors.textPrimary, letterSpacing: -0.8 },
-  goalTotal: { fontSize: 18, fontWeight: '400', color: Colors.textSecondary },
-  goalSub: { fontSize: 13, color: Colors.textSecondary, marginTop: 3 },
-  examsBadge: {
-    paddingHorizontal: 14, paddingVertical: 10,
-    borderRadius: 12, backgroundColor: Colors.primaryLight, alignItems: 'center',
+  hourRow: { flexDirection: 'row', alignItems: 'flex-start', height: HOUR_HEIGHT, gap: 10 },
+  hourLabel: { width: 42, fontSize: 11.5, color: Colors.warmMuted, fontWeight: '600', marginTop: -6 },
+  hourLine: { flex: 1, height: 1, backgroundColor: Colors.creamBorder },
+  // The blocks float over the hour lines, inset past the time column.
+  blockLayer: { position: 'absolute', left: 66, right: 14, top: 14 },
+  block: {
+    position: 'absolute',
+    borderRadius: 11,
+    padding: 10,
+    paddingRight: 8,
+    overflow: 'hidden',
   },
-  examsNum: { fontSize: 22, fontWeight: '700', color: Colors.primary, lineHeight: 26 },
-  examsLabel: { fontSize: 11, color: Colors.textSecondary, marginTop: 2 },
-  track: { height: 5, backgroundColor: Colors.border, borderRadius: 3, overflow: 'hidden', marginBottom: 10 },
-  fill: { height: '100%', backgroundColor: Colors.primary, borderRadius: 3 },
-  goalFooter: { flexDirection: 'row', justifyContent: 'space-between' },
-  goalPct: { fontSize: 12, fontWeight: '500', color: Colors.textSecondary },
-  goalLeft: { fontSize: 12, color: Colors.textMuted },
+  blockSubject: { fontSize: 13, fontWeight: '700', lineHeight: 17 },
+  blockMeta: { fontSize: 11.5, marginTop: 2, opacity: 0.85 },
+
+  listLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.warmMuted,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 12,
+  },
+
   taskRow: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.surface, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border,
-    padding: 14, marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.creamBorder,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 9,
   },
   checkbox: {
-    width: 18, height: 18, borderRadius: 5,
-    borderWidth: 1.5, borderColor: Colors.border, marginRight: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 7,
+    borderWidth: 1.5,
+    borderColor: Colors.creamBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  taskContent: { flex: 1 },
-  taskTitle: { fontSize: 14, fontWeight: '500', color: Colors.textPrimary, marginBottom: 2 },
-  taskMeta: { fontSize: 12, color: Colors.textMuted },
-  priorityDot: { width: 7, height: 7, borderRadius: 4, marginLeft: 10 },
+  checkboxOn: { backgroundColor: Colors.brandDeep, borderColor: Colors.brandDeep },
+  taskTitle: { fontSize: 14.5, fontWeight: '600', color: Colors.textPrimary },
+  taskDone: { textDecorationLine: 'line-through', color: Colors.warmMuted },
+  taskMeta: { fontSize: 12, color: Colors.warmMuted, marginTop: 3 },
+
   examCard: {
-    backgroundColor: Colors.surface, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border,
-    padding: 14, marginBottom: 8,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.creamBorder,
+    borderRadius: 16,
+    padding: 15,
+    marginBottom: 10,
   },
-  examRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
-  examInfo: { flex: 1 },
-  examSubject: { fontSize: 14, fontWeight: '500', color: Colors.textPrimary, marginBottom: 3 },
-  examDate: { fontSize: 12, color: Colors.textMuted },
-  daysBadge: { backgroundColor: Colors.primaryLight, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  examTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 12 },
+  examSubject: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
+  examDate: { fontSize: 12.5, color: Colors.warmGrey, marginTop: 3 },
+  daysBadge: { backgroundColor: Colors.blush, borderRadius: 9, paddingHorizontal: 11, paddingVertical: 5 },
   daysBadgeUrgent: { backgroundColor: Colors.errorLight },
-  daysText: { fontSize: 12, fontWeight: '600', color: Colors.primary },
+  daysText: { fontSize: 12, fontWeight: '700', color: Colors.brandDeep },
   daysTextUrgent: { color: Colors.error },
-  examProgress: { fontSize: 11, color: Colors.textMuted, marginTop: 6 },
-  emptyCard: {
-    backgroundColor: Colors.surface, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border,
-    padding: 20, alignItems: 'center', marginBottom: 24,
+  track: { height: 6, backgroundColor: Colors.surfaceMuted, borderRadius: 3, overflow: 'hidden' },
+  fill: { height: '100%', backgroundColor: Colors.brandDeep, borderRadius: 3 },
+  examProgress: { fontSize: 11.5, color: Colors.warmMuted, marginTop: 7 },
+
+  empty: { alignItems: 'center', paddingVertical: 44 },
+  emptyIcon: {
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    backgroundColor: Colors.blush,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
-  emptyText: { fontSize: 13, color: Colors.textMuted },
+  emptyTitle: { fontSize: 17, fontWeight: '800', color: Colors.textPrimary, marginBottom: 6 },
+  emptySub: { fontSize: 13.5, color: Colors.warmGrey, textAlign: 'center', paddingHorizontal: 24, lineHeight: 20 },
+
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: Colors.brandDeep,
+    borderRadius: 14,
+    paddingVertical: 16,
+    marginTop: 18,
+  },
+  addBtnText: { fontSize: 15.5, fontWeight: '700', color: Colors.white },
 });

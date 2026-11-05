@@ -429,6 +429,13 @@ export default {
     Saturday: 'Sat',
     Sunday: 'Sun',
   },
+  planner: {
+    noClassesSub: 'Nothing scheduled for this day. Add a class or import your university timetable.',
+    noTasksSub: 'Add your first task and it will show up here.',
+    noExamsTitle: 'No exams yet',
+    noExamsSub: 'Add an exam to get reminders and track your revision.',
+    addExam: 'Add exam',
+  },
   timetable: {
     subtitle: 'Weekly class schedule',
     oneClass: '1 class',
