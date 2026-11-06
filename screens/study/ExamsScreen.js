@@ -69,9 +69,11 @@ export default function ExamsScreen({ navigation }) {
             title: t('exams.reminderTitle', { subject: exam.subject }), 
             body: t('exams.reminderBody', { time: exam.time }) 
           },
-          trigger: { 
+          // SchedulableTriggerInputTypes.DATE is the string 'date'.
+          trigger: {
             type: 'date',
             date: reminderDate,
+            channelId: 'reminders',
           },
         });
         console.log('Exam reminder scheduled');

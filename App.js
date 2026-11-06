@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -36,6 +37,18 @@ import ProfileSetupScreen from './screens/ProfileSetupScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 
+// Without a handler a reminder that arrives while the app is open is
+// delivered silently. shouldShowAlert was replaced by shouldShowBanner and
+// shouldShowList, so the old field would now be ignored.
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -69,20 +82,30 @@ export default function App() {
     return unsubscribe;
   }, []);
   useEffect(() => {
-  const requestPermissions = async () => {
-    try {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Notification permissions not granted');
+    const setUpNotifications = async () => {
+      try {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== 'granted') {
+          console.log('Notification permissions not granted');
+          return;
+        }
+        // Android only shows a scheduled notification if its channel exists.
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync('reminders', {
+            name: 'Reminders',
+            // HIGH so an exam reminder appears on screen rather than
+            // waiting silently in the shade.
+            importance: Notifications.AndroidImportance.HIGH,
+          });
+        }
+      } catch (e) {
+        // Not supported on web.
+        console.log('Notifications unavailable:', e.message);
       }
-    } catch (e) {
-      // Not supported on web.
-      console.log('Notifications unavailable:', e.message);
-    }
-  };
+    };
 
-  requestPermissions();
-}, []);
+    setUpNotifications();
+  }, []);
 
   return (
     <LanguageProvider>
