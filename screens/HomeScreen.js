@@ -257,7 +257,9 @@ const styles = StyleSheet.create({
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 11, marginTop: 22 },
   card: {
-    width: '47.8%',
+    // A basis under half leaves room for the gap on narrow phones; flexGrow
+    // then stretches the pair to fill the row.
+    width: '46%',
     flexGrow: 1,
     flexDirection: 'row',
     alignItems: 'flex-start',
